@@ -1,12 +1,29 @@
 {
-  "name": "mdoc",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@mdoc/mdl",
+  "description": "mdoc mdl implementation in typescript",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run --coverage.enabled=true --coverage.include=packages/*"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "keywords": [
+    "mdl",
+    "mdoc"
+  ],
+  "author": "Lukas.J.Han <lukas.j.han@gmail.com>",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.6.0",
+    "@types/node": "^20.10.2",
+    "@vitest/coverage-v8": "^1.2.2",
+    "jose": "^5.2.2",
+    "jsdom": "^24.0.0",
+    "lerna": "^8.1.2",
+    "ts-node": "^10.9.1",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.2",
+    "vite": "^5.1.1",
+    "vitest": "^1.2.2"
+  }
 }

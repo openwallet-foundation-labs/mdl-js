@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "version": "0.6.1",
+  "npmClient": "pnpm",
+  "exact": true,
+  "message": "chore(release): %s",
+  "packages": ["packages/*"],
+  "command": {
+    "publish": {
+      "conventionalCommits": true
+    }
+  }
+}

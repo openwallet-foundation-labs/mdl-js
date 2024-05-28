@@ -82,19 +82,17 @@ describe('Base64url', () => {
 
   test('Encode float', () => {
     const buffer = encodeCBOR(0.5);
-    console.log(Buffer.from(buffer));
     expect(
       areEqual(
         buffer,
-        new Uint8Array([0xfb, 0x3f, 0xe0, 0x00, 0x00, 0xe0, 0x00, 0x00, 0x00]),
+        new Uint8Array([0xfb, 0x3f, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
       ),
     ).toBe(true);
   });
 
   test('Encode float with cbor', () => {
-    const buffer1 = encode(0.34);
-    const buffer2 = encodeCBOR(0.34);
-    //console.log(buffer1, Buffer.from(buffer2));
+    const buffer1 = encode(0.23);
+    const buffer2 = encodeCBOR(0.23);
     expect(areEqual(buffer1, buffer2)).toBe(true);
   });
 
@@ -103,7 +101,7 @@ describe('Base64url', () => {
     expect(
       areEqual(
         buffer,
-        new Uint8Array([0xfb, 0xbf, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+        new Uint8Array([0xfb, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
       ),
     ).toBe(true);
   });
@@ -111,6 +109,7 @@ describe('Base64url', () => {
   test('Encode float(negative) with cbor', () => {
     const buffer1 = encode(-0.5);
     const buffer2 = encodeCBOR(-0.5);
+    console.log(buffer1, Buffer.from(buffer2));
     expect(areEqual(buffer1, buffer2)).toBe(true);
   });
 

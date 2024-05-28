@@ -15,3 +15,7 @@ yarn install @mdoc/mDL
 ```bash
 pnpm install @mdoc/mDL
 ```
+
+## Version
+
+We keep all the versions of our packages in sync.

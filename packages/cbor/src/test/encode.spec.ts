@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { encodeCBOR, areEqual } from '../index';
-import { encode } from 'cbor';
+import { decode, encode } from 'cbor';
 
 describe('Base64url', () => {
   test('Encode', () => {
@@ -101,16 +101,15 @@ describe('Base64url', () => {
     expect(
       areEqual(
         buffer,
-        new Uint8Array([0xfb, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+        new Uint8Array([0xfb, 0xbf, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
       ),
     ).toBe(true);
   });
 
   test('Encode float(negative) with cbor', () => {
-    const buffer1 = encode(-0.5);
     const buffer2 = encodeCBOR(-0.5);
-    console.log(buffer1, Buffer.from(buffer2));
-    expect(areEqual(buffer1, buffer2)).toBe(true);
+    const data = decode(Buffer.from(buffer2));
+    expect(data).toBe(-0.5);
   });
 
   test('Encode array', () => {

@@ -5,8 +5,8 @@ import { decode, encode } from 'cbor';
 const textEncoder = new TextEncoder();
 const textencode = (data: string) => textEncoder.encode(data);
 
-describe('Base64url', () => {
-  test('Encode', () => {
+describe('CBOR encode', () => {
+  test('Simple Encode', () => {
     const cborEncoder = new CBOREncoder(textencode);
     const buffer = cborEncoder.encode('hi');
     expect(areEqual(buffer, new Uint8Array([0x62, 0x68, 0x69]))).toBe(true);

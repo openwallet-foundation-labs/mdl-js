@@ -1,3 +1,4 @@
+import { concat } from '@mdoc/cbor';
 import { base64urlToUint8Array, uint8ArrayToBase64Url } from './base64url';
 
 export interface JsonWebKey {
@@ -20,7 +21,7 @@ export interface CoseKey {
   '-4'?: Uint8Array; // private key
 }
 
-export function coseToJwk(coseKey: CoseKey) {
+export const coseToJwk = (coseKey: CoseKey): JsonWebKey => {
   const kty = coseKey['1'];
   if (kty !== 2) {
     throw new Error(`Expected COSE Key type: EC2 (2), got: ${kty}`);
@@ -49,9 +50,9 @@ export function coseToJwk(coseKey: CoseKey) {
   }
 
   return jwk;
-}
+};
 
-export function jwkToCose(jwk: JsonWebKey): CoseKey {
+export const coseFromJwk = (jwk: JsonWebKey): CoseKey => {
   if (jwk.kty !== 'EC') {
     throw new Error(`Expected JWK Key type: EC, got: ${jwk.kty}`);
   }
@@ -79,4 +80,19 @@ export function jwkToCose(jwk: JsonWebKey): CoseKey {
   }
 
   return coseKey;
-}
+};
+
+export const coseToBuffer = (key: CoseKey): Uint8Array => {
+  const kty = key['1'];
+  if (kty !== 2) {
+    throw new Error(`Expected COSE Key type: EC2 (2), got: ${kty}`);
+  }
+
+  if (key['-4']) {
+    // if private key is present, return the private key
+    return key['-4'];
+  }
+
+  // return public key
+  return concat(Uint8Array.from([0x04]), key['-2'], key['-3']);
+};

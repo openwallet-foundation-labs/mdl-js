@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { coseToJwk, jwkToCose } from '../index';
+import { coseToJwk, coseFromJwk } from '../index';
 
 const jwkSample = {
   kty: 'EC',
@@ -13,12 +13,12 @@ const jwkSample = {
 
 describe('COSE', () => {
   test('simple', () => {
-    const cose = jwkToCose(jwkSample);
+    const cose = coseFromJwk(jwkSample);
     expect(cose).toBeDefined();
   });
 
   test('convert again', () => {
-    const cose = jwkToCose(jwkSample);
+    const cose = coseFromJwk(jwkSample);
     const jwk = coseToJwk(cose);
 
     expect(jwk.d).toEqual(jwkSample.d);

@@ -50,6 +50,9 @@ importers:
 
   packages/cose:
     dependencies:
+      '@mdoc/cbor':
+        specifier: workspace:*
+        version: link:../cbor
       js-base64:
         specifier: ^3.7.7
         version: 3.7.7

@@ -1,5 +1,5 @@
 {
-  "name": "@mdoc/cose",
+  "name": "@mdoc/mdl-utils",
   "version": "0.0.1",
   "description": "mdl implementation in typescript",
   "main": "dist/index.js",
@@ -43,5 +43,8 @@
       "cjs",
       "esm"
     ]
+  },
+  "dependencies": {
+    "js-base64": "^3.7.7"
   }
 }

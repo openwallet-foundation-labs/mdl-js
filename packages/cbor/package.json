@@ -21,7 +21,8 @@
   },
   "keywords": [
     "mdl",
-    "mdoc"
+    "mdoc",
+    "cbor"
   ],
   "engines": {
     "node": ">=16"

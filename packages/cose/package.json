@@ -1,5 +1,5 @@
 {
-  "name": "@mdoc/mdl-utils",
+  "name": "@mdoc/cose",
   "version": "0.0.1",
   "description": "mdl implementation in typescript",
   "main": "dist/index.js",
@@ -21,7 +21,8 @@
   },
   "keywords": [
     "mdl",
-    "mdoc"
+    "mdoc",
+    "cose"
   ],
   "engines": {
     "node": ">=16"

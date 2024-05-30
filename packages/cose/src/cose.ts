@@ -26,7 +26,7 @@ export function coseToJwk(coseKey: CoseKey) {
     throw new Error(`Expected COSE Key type: EC2 (2), got: ${kty}`);
   }
 
-  const crvMap = {
+  const crvMap: Record<number, string> = {
     1: 'P-256',
     2: 'P-384',
     3: 'P-521',
@@ -56,7 +56,7 @@ export function jwkToCose(jwk: JsonWebKey): CoseKey {
     throw new Error(`Expected JWK Key type: EC, got: ${jwk.kty}`);
   }
 
-  const crvMap = {
+  const crvMap: Record<string, number> = {
     'P-256': 1,
     'P-384': 2,
     'P-521': 3,

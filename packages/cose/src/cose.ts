@@ -2,13 +2,9 @@ import { concat } from '@mdoc/cbor';
 import { base64urlToUint8Array, uint8ArrayToBase64Url } from './base64url';
 
 export interface JsonWebKey {
-  alg?: string;
   crv?: string;
   d?: string; // private key
-  ext?: boolean;
-  key_ops?: string[];
   kty?: string;
-  use?: string;
   x: string; // public key
   y: string; // public key
 }

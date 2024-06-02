@@ -31,6 +31,8 @@ const oidMap: { [key: string]: string } = {
   '551d13': 'basicConstraints',
   '551d20': 'certificatePolicies',
   '551d23': 'authorityKeyIdentifier',
+  '551d12': 'issuerAltName',
+  '551d1f': 'cRLDistributionPoints',
 };
 
 class ASN1Parser {
@@ -272,6 +274,75 @@ class X509Certificate {
     }
     return 'Unknown';
   }
+
+  public getExtensions(): { [key: string]: any } {
+    const tbsCertificate = this.parsedData.value[0];
+    const extensionsElement = tbsCertificate.value.find(
+      (element: any) => element.tag === 0xa3,
+    );
+    if (extensionsElement) {
+      const extensions = extensionsElement.value[0];
+      if (extensions.tag === 0x30) {
+        // SEQUENCE
+        return this.parseExtensions(extensions);
+      }
+    }
+    return {};
+  }
+
+  private parseExtensions(extensionsElement: any): { [key: string]: any } {
+    const extensions: { [key: string]: any } = {};
+    extensionsElement.value.forEach((extensionElement: any) => {
+      const oidElement = extensionElement.value[0];
+      const valueElement = extensionElement.value[1];
+      const oid = this.oidToAlgorithm(oidElement.value);
+      const value = this.parseExtensionValue(oid, valueElement.value);
+      extensions[oid] = value;
+    });
+    return extensions;
+  }
+
+  private parseExtensionValue(oid: string, value: ArrayBuffer): any {
+    switch (oid) {
+      case 'subjectKeyIdentifier':
+        return this.toHexString(value);
+      case 'basicConstraints':
+        return this.parseBasicConstraints(value);
+      case 'keyUsage':
+        return this.parseKeyUsage(value);
+      case 'issuerAltName':
+        return this.bufferToString(value); // 단순 문자열로 변환
+      case 'cRLDistributionPoints':
+        return this.bufferToString(value); // 단순 문자열로 변환
+      default:
+        return this.toHexString(value); // 기본적으로 HexString으로 변환
+    }
+  }
+
+  private parseBasicConstraints(value: ArrayBuffer): any {
+    const view = new DataView(value);
+    const isCA = view.getUint8(0) !== 0;
+    let pathLenConstraint: number | null = null;
+    if (view.byteLength > 1) {
+      pathLenConstraint = view.getUint8(1);
+    }
+    return { isCA, pathLenConstraint };
+  }
+
+  private parseKeyUsage(value: ArrayBuffer): string[] {
+    const view = new DataView(value);
+    const keyUsageBits = view.getUint8(0);
+    const usage: string[] = [];
+    if (keyUsageBits & 0x80) usage.push('Digital Signature');
+    if (keyUsageBits & 0x40) usage.push('Non Repudiation');
+    if (keyUsageBits & 0x20) usage.push('Key Encipherment');
+    if (keyUsageBits & 0x10) usage.push('Data Encipherment');
+    if (keyUsageBits & 0x08) usage.push('Key Agreement');
+    if (keyUsageBits & 0x04) usage.push('Key Cert Sign');
+    if (keyUsageBits & 0x02) usage.push('CRL Sign');
+    if (keyUsageBits & 0x01) usage.push('Encipher Only');
+    return usage;
+  }
 }
 
 // 사용 예제
@@ -308,3 +379,5 @@ const subjectPublicKeyInfo = cert.getSubjectPublicKeyInfo();
 console.log(
   `Subject Public Key Info: Algorithm: ${subjectPublicKeyInfo.algorithm}, Public Key: ${subjectPublicKeyInfo.publicKey}`,
 ); // 예상 출력: 공개 키 정보
+const extensions = cert.getExtensions();
+console.log('Extensions:', extensions); // 예상 출력: 확장 필드 정보

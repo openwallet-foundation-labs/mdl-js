@@ -170,6 +170,108 @@ class X509Certificate {
     const oidHex = this.toHexString(oid);
     return oidMap[oidHex] || `Unknown OID: ${oidHex}`;
   }
+
+  public getIssuer(): string {
+    const tbsCertificate = this.parsedData.value[0];
+    const issuerElement = tbsCertificate.value[3];
+    if (issuerElement.tag === 0x30) {
+      // SEQUENCE
+      return this.parseName(issuerElement);
+    }
+    return '';
+  }
+
+  private parseName(nameElement: any): string {
+    const rdnSequence = nameElement.value;
+    return rdnSequence
+      .map((rdnSet: any) => {
+        const rdn = rdnSet.value[0];
+        const oid = this.oidToName(rdn.value[0].value);
+        const value = this.bufferToString(rdn.value[1].value);
+        return `${oid}=${value}`;
+      })
+      .join(', ');
+  }
+
+  private oidToName(oid: ArrayBuffer): string {
+    const oidHex = this.toHexString(oid);
+    const oidMap: { [key: string]: string } = {
+      '550406': 'C', // Country Name
+      '550408': 'ST', // State or Province Name
+      '55040a': 'O', // Organization Name
+      '55040b': 'OU', // Organizational Unit Name
+      '550403': 'CN', // Common Name
+      '550409': 'L', // Locality Name
+      // 추가적인 OID를 필요에 따라 추가
+    };
+    return oidMap[oidHex] || `Unknown OID: ${oidHex}`;
+  }
+
+  private bufferToString(buffer: ArrayBuffer): string {
+    return new TextDecoder().decode(buffer);
+  }
+
+  private parseTime(timeElement: any): Date {
+    const timeString = this.bufferToString(timeElement.value);
+    // UTCTime은 YYMMDDHHMMSSZ 형식입니다.
+    const year = parseInt(timeString.slice(0, 2), 10) + 2000; // 2000년대 기준
+    const month = parseInt(timeString.slice(2, 4), 10) - 1; // 월은 0부터 시작
+    const day = parseInt(timeString.slice(4, 6), 10);
+    const hours = parseInt(timeString.slice(6, 8), 10);
+    const minutes = parseInt(timeString.slice(8, 10), 10);
+    const seconds = parseInt(timeString.slice(10, 12), 10);
+    return new Date(Date.UTC(year, month, day, hours, minutes, seconds));
+  }
+
+  public getValidity(): { notBefore: Date; notAfter: Date } {
+    const tbsCertificate = this.parsedData.value[0];
+    const validityElement = tbsCertificate.value[4];
+    if (validityElement.tag === 0x30) {
+      // SEQUENCE
+      const notBeforeElement = validityElement.value[0];
+      const notAfterElement = validityElement.value[1];
+      return {
+        notBefore: this.parseTime(notBeforeElement),
+        notAfter: this.parseTime(notAfterElement),
+      };
+    }
+    return { notBefore: new Date(0), notAfter: new Date(0) };
+  }
+
+  public getSubject(): string {
+    const tbsCertificate = this.parsedData.value[0];
+    const subjectElement = tbsCertificate.value[5];
+    if (subjectElement.tag === 0x30) {
+      // SEQUENCE
+      return this.parseName(subjectElement);
+    }
+    return '';
+  }
+
+  public getSubjectPublicKeyInfo(): { algorithm: string; publicKey: string } {
+    const tbsCertificate = this.parsedData.value[0];
+    const subjectPublicKeyInfoElement = tbsCertificate.value[6];
+    if (subjectPublicKeyInfoElement.tag === 0x30) {
+      // SEQUENCE
+      const algorithmIdentifierElement = subjectPublicKeyInfoElement.value[0];
+      const publicKeyElement = subjectPublicKeyInfoElement.value[1];
+      const algorithm = this.parseAlgorithmIdentifier(
+        algorithmIdentifierElement,
+      );
+      const publicKey = this.toHexString(publicKeyElement.value);
+      return { algorithm, publicKey };
+    }
+    return { algorithm: 'Unknown', publicKey: '' };
+  }
+
+  private parseAlgorithmIdentifier(element: any): string {
+    const oidElement = element.value[0];
+    if (oidElement.tag === 0x06) {
+      // OBJECT IDENTIFIER
+      return this.oidToAlgorithm(oidElement.value);
+    }
+    return 'Unknown';
+  }
 }
 
 // 사용 예제
@@ -196,3 +298,13 @@ const cert = new X509Certificate(parsedCert);
 console.log(`Version: ${cert.getVersion()}`); // 예상 출력: Version: 3
 console.log(`Serial Number: ${cert.getSerialNumber()}`); // 예상 출력: Serial Number: 5ddd2890e38ce5cca517073658d2bb0f63be02b0
 console.log(`Signature Algorithm: ${cert.getSignatureAlgorithm()}`); // 예상 출력: Signature Algorithm: ecdsa-with-SHA256
+console.log(`Issuer: ${cert.getIssuer()}`); // 예상 출력: Issuer: C=US, ST=US-CA, O=CA-DMV, CN=California DMV IACA Root
+const validity = cert.getValidity();
+console.log(
+  `Validity: Not Before: ${validity.notBefore}, Not After: ${validity.notAfter}`,
+); // 예상 출력: 유효기간 정보
+console.log(`Subject: ${cert.getSubject()}`); // 예상 출력: Subject: C=US, ST=US-CA, O=CA-DMV, CN=California DMV IACA Root
+const subjectPublicKeyInfo = cert.getSubjectPublicKeyInfo();
+console.log(
+  `Subject Public Key Info: Algorithm: ${subjectPublicKeyInfo.algorithm}, Public Key: ${subjectPublicKeyInfo.publicKey}`,
+); // 예상 출력: 공개 키 정보

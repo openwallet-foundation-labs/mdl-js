@@ -75,6 +75,13 @@ class ASN1Parser {
       // Primitive types
       const value = this.buffer.slice(this.offset, this.offset + length);
       this.offset += length;
+
+      // Check if the value is a sequence
+      if (tag === 0x04 && new DataView(value).getUint8(0) === 0x30) {
+        const sequenceParser = new ASN1Parser(value);
+        return sequenceParser.parse().value;
+      }
+
       return value;
     }
   }
@@ -311,12 +318,30 @@ class X509Certificate {
       case 'keyUsage':
         return this.parseKeyUsage(value);
       case 'issuerAltName':
-        return this.bufferToString(value); // 단순 문자열로 변환
+        return this.parseGeneralNames(value); // 단순 문자열로 변환
       case 'cRLDistributionPoints':
-        return this.bufferToString(value); // 단순 문자열로 변환
+        return this.parseCRLDistributionPoints(value); // 단순 문자열로 변환
       default:
         return this.toHexString(value); // 기본적으로 HexString으로 변환
     }
+  }
+
+  private parseGeneralNames(valueElement: any): any {
+    const generalNames = valueElement[0].value;
+    return this.bufferToString(generalNames);
+  }
+
+  private parseCRLDistributionPoints(valueElement: any): any {
+    const distributionPoints = valueElement[0].value;
+    return distributionPoints
+      .map((dp: any) => {
+        const dpName = dp.value[0];
+        if (dpName && dpName.value && dpName.value[0]) {
+          return this.bufferToString(dpName.value[0].value);
+        }
+        return '';
+      })
+      .join(', ');
   }
 
   private parseBasicConstraints(value: ArrayBuffer): any {
@@ -364,7 +389,7 @@ const binaryCert = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0)).buffer;
 
 const parser = new ASN1Parser(binaryCert);
 const parsedCert = parser.parse();
-//parser.printParsedData(parsedCert);
+parser.printParsedData(parsedCert);
 const cert = new X509Certificate(parsedCert);
 console.log(`Version: ${cert.getVersion()}`); // 예상 출력: Version: 3
 console.log(`Serial Number: ${cert.getSerialNumber()}`); // 예상 출력: Serial Number: 5ddd2890e38ce5cca517073658d2bb0f63be02b0

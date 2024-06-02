@@ -17,7 +17,10 @@
     "test": "pnpm run test:node && pnpm run test:browser && pnpm run test:cov",
     "test:node": "vitest run ./src/test/*.spec.ts",
     "test:browser": "vitest run ./src/test/*.spec.ts --environment jsdom",
-    "test:cov": "vitest run --coverage"
+    "test:cov": "vitest run --coverage",
+    "ttt": "tsx src/index.ts",
+    "tta": "tsx src/test2.ts",
+    "ttb": "tsx src/test.ts"
   },
   "keywords": [
     "mdl",
@@ -44,5 +47,8 @@
       "cjs",
       "esm"
     ]
+  },
+  "devDependencies": {
+    "tsx": "^4.11.0"
   }
 }

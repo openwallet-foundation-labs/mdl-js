@@ -1,5 +1,5 @@
 {
-  "name": "@mdoc/cose",
+  "name": "@m-doc/cose",
   "version": "0.0.1",
   "description": "mdl implementation in typescript",
   "main": "dist/index.js",
@@ -47,6 +47,6 @@
   },
   "dependencies": {
     "js-base64": "^3.7.7",
-    "@mdoc/cbor": "workspace:*"
+    "@m-doc/cbor": "workspace:*"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@mdoc/mdl-types",
+  "name": "@m-doc/mdl-types",
   "version": "0.0.1",
   "description": "mdl implementation in typescript",
   "main": "dist/index.js",

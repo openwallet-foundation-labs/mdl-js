@@ -5,15 +5,15 @@ This package provides a [CBOR](https://datatracker.ietf.org/doc/html/rfc7049) en
 ## Installation
 
 ```bash
-npm install @mdoc/cbor
+npm install @m-doc/x509
 ```
 
 ```bash
-yarn install @mdoc/cbor
+yarn install @m-doc/x509
 ```
 
 ```bash
-pnpm install @mdoc/cbor
+pnpm install @m-doc/x509
 ```
 
 ## Usage

@@ -13,15 +13,15 @@ This is the reference implmentation of [ISO 18013-5](https://www.iso.org/standar
 ## Installation
 
 ```bash
-npm install @mdoc/mDL
+npm install @m-doc/mdl
 ```
 
 ```bash
-yarn install @mdoc/mDL
+yarn install @m-doc/mdl
 ```
 
 ```bash
-pnpm install @mdoc/mDL
+pnpm install @m-doc/mdl
 ```
 
 ## Version

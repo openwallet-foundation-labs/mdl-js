@@ -383,7 +383,7 @@ const binaryCert = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0)).buffer;
 
 const parser = new ASN1Parser(binaryCert);
 const parsedCert = parser.parse();
-//parser.printParsedData(parsedCert);
+parser.printParsedData(parsedCert);
 const cert = new X509Certificate(parsedCert);
 console.log(`Version: ${cert.getVersion()}`); // 예상 출력: Version: 3
 console.log(`Serial Number: ${cert.getSerialNumber()}`); // 예상 출력: Serial Number: 5ddd2890e38ce5cca517073658d2bb0f63be02b0

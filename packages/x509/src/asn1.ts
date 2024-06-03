@@ -1,3 +1,9 @@
+export type ASN1 = {
+  tag: number;
+  length: number;
+  value: ArrayBuffer | Array<ASN1>;
+};
+
 export class ASN1Parser {
   private buffer: ArrayBuffer;
   private view: DataView;
@@ -25,7 +31,7 @@ export class ASN1Parser {
     return length;
   }
 
-  private parseValue(tag: number, length: number): any {
+  private parseValue(tag: number, length: number): ASN1['value'] {
     if ((tag & 0x20) === 0x20) {
       // Constructed types
       const endOffset = this.offset + length;
@@ -49,7 +55,7 @@ export class ASN1Parser {
     }
   }
 
-  public parse(): any {
+  public parse(): ASN1 {
     const tag = this.parseTag();
     const length = this.parseLength();
     const value = this.parseValue(tag, length);
@@ -76,15 +82,16 @@ export class ASN1Parser {
     }
   }
 
-  private formatValue(value: any): string {
+  private formatValue(value: ASN1['value']): string {
     if (value instanceof ArrayBuffer) {
       return Array.from(new Uint8Array(value))
         .map((byte) => byte.toString(16).padStart(2, '0'))
         .join(' ');
-    } else if (Array.isArray(value)) {
-      return JSON.stringify(value);
-    } else {
-      return String(value);
     }
+
+    if (Array.isArray(value)) {
+      return JSON.stringify(value);
+    }
+    return String(value);
   }
 }

@@ -1,4 +1,4 @@
-import { oidMap } from './oid';
+import { oidMap, simpleOidMap } from './oid';
 
 export class X509Certificate {
   private parsedData: any;
@@ -43,13 +43,13 @@ export class X509Certificate {
       const algorithmIdentifier = signatureAlgorithmElement.value[0];
       if (algorithmIdentifier.tag === 0x06) {
         // OBJECT IDENTIFIER
-        return this.oidToAlgorithm(algorithmIdentifier.value);
+        return this.oidToName(algorithmIdentifier.value);
       }
     }
     return 'Unknown';
   }
 
-  private oidToAlgorithm(oid: ArrayBuffer): string {
+  private oidToName(oid: ArrayBuffer): string {
     const oidHex = this.toHexString(oid);
     return oidMap[oidHex] || `Unknown OID: ${oidHex}`;
   }
@@ -78,14 +78,6 @@ export class X509Certificate {
 
   private oidToSimpleName(oid: ArrayBuffer): string {
     const oidHex = this.toHexString(oid);
-    const simpleOidMap: { [key: string]: string } = {
-      '550406': 'C', // Country Name
-      '550408': 'ST', // State or Province Name
-      '55040a': 'O', // Organization Name
-      '55040b': 'OU', // Organizational Unit Name
-      '550403': 'CN', // Common Name
-      '550409': 'L', // Locality Name
-    };
     return simpleOidMap[oidHex] || `Unknown OID: ${oidHex}`;
   }
 
@@ -150,7 +142,7 @@ export class X509Certificate {
     const oidElement = element.value[0];
     if (oidElement.tag === 0x06) {
       // OBJECT IDENTIFIER
-      return this.oidToAlgorithm(oidElement.value);
+      return this.oidToName(oidElement.value);
     }
     return 'Unknown';
   }
@@ -175,7 +167,7 @@ export class X509Certificate {
     extensionsElement.value.forEach((extensionElement: any) => {
       const oidElement = extensionElement.value[0];
       const valueElement = extensionElement.value[1];
-      const oid = this.oidToAlgorithm(oidElement.value);
+      const oid = this.oidToName(oidElement.value);
       const value = this.parseExtensionValue(oid, valueElement.value);
       extensions[oid] = value;
     });

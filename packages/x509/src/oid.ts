@@ -34,3 +34,12 @@ export const oidMap: { [key: string]: string } = {
   '551d12': 'issuerAltName',
   '551d1f': 'cRLDistributionPoints',
 };
+
+export const simpleOidMap: { [key: string]: string } = {
+  '550406': 'C', // Country Name
+  '550408': 'ST', // State or Province Name
+  '55040a': 'O', // Organization Name
+  '55040b': 'OU', // Organizational Unit Name
+  '550403': 'CN', // Common Name
+  '550409': 'L', // Locality Name
+};

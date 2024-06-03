@@ -211,7 +211,6 @@ class X509Certificate {
       '55040b': 'OU', // Organizational Unit Name
       '550403': 'CN', // Common Name
       '550409': 'L', // Locality Name
-      // 추가적인 OID를 필요에 따라 추가
     };
     return oidMap[oidHex] || `Unknown OID: ${oidHex}`;
   }
@@ -222,9 +221,9 @@ class X509Certificate {
 
   private parseTime(timeElement: any): Date {
     const timeString = this.bufferToString(timeElement.value);
-    // UTCTime은 YYMMDDHHMMSSZ 형식입니다.
-    const year = parseInt(timeString.slice(0, 2), 10) + 2000; // 2000년대 기준
-    const month = parseInt(timeString.slice(2, 4), 10) - 1; // 월은 0부터 시작
+    // UTCTime format is YYMMDDHHMMSSZ
+    const year = parseInt(timeString.slice(0, 2), 10) + 2000; // 2000 year base
+    const month = parseInt(timeString.slice(2, 4), 10) - 1; // month is 0 started
     const day = parseInt(timeString.slice(4, 6), 10);
     const hours = parseInt(timeString.slice(6, 8), 10);
     const minutes = parseInt(timeString.slice(8, 10), 10);
@@ -318,11 +317,11 @@ class X509Certificate {
       case 'keyUsage':
         return this.parseKeyUsage(value);
       case 'issuerAltName':
-        return this.parseGeneralNames(value); // 단순 문자열로 변환
+        return this.parseGeneralNames(value); // simple string return
       case 'cRLDistributionPoints':
-        return this.parseCRLDistributionPoints(value); // 단순 문자열로 변환
+        return this.parseCRLDistributionPoints(value); // simple string return
       default:
-        return this.toHexString(value); // 기본적으로 HexString으로 변환
+        return this.toHexString(value); // basic HexString return
     }
   }
 

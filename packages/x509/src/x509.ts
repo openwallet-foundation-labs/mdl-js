@@ -2,11 +2,16 @@ import { ASN1, ASN1Parser } from './asn1';
 import { oidMap, simpleOidMap } from './oid';
 import { Base64 } from 'js-base64';
 
+export type TextDecoder = (data: ArrayBuffer) => string;
+
 export class X509Certificate {
   private parsedData: ASN1;
   public data: { [key: string]: unknown } | null = null;
+  private textDecoder: TextDecoder;
 
-  constructor(pem: string) {
+  constructor(pem: string, textDecoder: TextDecoder) {
+    this.textDecoder = textDecoder;
+
     const trimmedPem = pem
       .replace(/-----BEGIN CERTIFICATE-----/g, '')
       .replace(/-----END CERTIFICATE-----/g, '')
@@ -39,7 +44,7 @@ export class X509Certificate {
     };
   }
 
-  public getVersion(): number {
+  private getVersion(): number {
     const tbsCertificate = (this.parsedData.value as ASN1[])[0];
     const versionElement = (tbsCertificate.value as ASN1[])[0];
     if (versionElement.tag === 0xa0) {
@@ -53,7 +58,7 @@ export class X509Certificate {
     return 1; // Default version is v1 if version field is not present
   }
 
-  public getSerialNumber(): string {
+  private getSerialNumber(): string {
     const tbsCertificate = (this.parsedData.value as ASN1[])[0];
     const serialNumberElement = (tbsCertificate.value as ASN1[])[1];
     if (serialNumberElement.tag === 0x02) {
@@ -64,10 +69,13 @@ export class X509Certificate {
   }
 
   private toHexString(buffer: ArrayBuffer): string {
-    return Buffer.from(buffer).toString('hex');
+    const byteArray = new Uint8Array(buffer);
+    return Array.from(byteArray)
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
   }
 
-  public getSignatureAlgorithm(): string {
+  private getSignatureAlgorithm(): string {
     const tbsCertificate = (this.parsedData.value as ASN1[])[0];
     const signatureAlgorithmElement = (tbsCertificate.value as ASN1[])[2];
     if (signatureAlgorithmElement.tag === 0x30) {
@@ -88,7 +96,7 @@ export class X509Certificate {
     return oidMap[oidHex] || `Unknown OID: ${oidHex}`;
   }
 
-  public getIssuer(): {
+  private getIssuer(): {
     simple: string;
     data: { [key: string]: string };
   } {
@@ -129,7 +137,7 @@ export class X509Certificate {
   }
 
   private bufferToString(buffer: ArrayBuffer): string {
-    return new TextDecoder().decode(buffer);
+    return this.textDecoder(buffer);
   }
 
   private parseTime(timeElement: ASN1): Date {
@@ -144,7 +152,7 @@ export class X509Certificate {
     return new Date(Date.UTC(year, month, day, hours, minutes, seconds));
   }
 
-  public getValidity(): { notBefore: Date; notAfter: Date } {
+  private getValidity(): { notBefore: Date; notAfter: Date } {
     const tbsCertificate = (this.parsedData.value as ASN1[])[0];
     const validityElement = (tbsCertificate.value as ASN1[])[4];
     if (validityElement.tag === 0x30) {
@@ -159,7 +167,7 @@ export class X509Certificate {
     return { notBefore: new Date(0), notAfter: new Date(0) };
   }
 
-  public getSubject(): {
+  private getSubject(): {
     simple: string;
     data: { [key: string]: string };
   } {
@@ -172,7 +180,7 @@ export class X509Certificate {
     return { simple: '', data: {} };
   }
 
-  public getSubjectPublicKeyInfo(): { algorithm: string; publicKey: string } {
+  private getSubjectPublicKeyInfo(): { algorithm: string; publicKey: string } {
     const tbsCertificate = (this.parsedData.value as ASN1[])[0];
     const subjectPublicKeyInfoElement = (tbsCertificate.value as ASN1[])[6];
     if (subjectPublicKeyInfoElement.tag === 0x30) {
@@ -199,7 +207,7 @@ export class X509Certificate {
     return 'Unknown';
   }
 
-  public getExtensions(): { [key: string]: unknown } {
+  private getExtensions(): { [key: string]: unknown } {
     const tbsCertificate = (this.parsedData.value as ASN1[])[0];
     const extensionsElement = (tbsCertificate.value as ASN1[]).find(
       (element: ASN1) => element.tag === 0xa3,

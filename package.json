@@ -1,5 +1,5 @@
 {
-  "name": "@mdoc/mdl",
+  "name": "@m-doc/mdl",
   "description": "mdoc mdl implementation in typescript",
   "scripts": {
     "build": "lerna run build --stream",

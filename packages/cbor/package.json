@@ -1,5 +1,5 @@
 {
-  "name": "@mdoc/cbor",
+  "name": "@m-doc/cbor",
   "version": "0.0.1",
   "description": "mdl implementation in typescript",
   "main": "dist/index.js",

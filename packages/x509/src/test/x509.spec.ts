@@ -32,17 +32,23 @@ describe('X509Certificate Parser', () => {
     expect(x509Certificate.getVersion()).toBe(3);
     expect(x509Certificate.getSerialNumber()).toBe('018fd867b05d');
     expect(x509Certificate.getSignatureAlgorithm()).toBe('ecdsa-with-SHA256');
-    expect(x509Certificate.getIssuer()).toBe(
-      'CN=2I66J6-ellx7jHctgES2dGWlhhDhsIvu_GASPuCEF08',
-    );
+    expect(x509Certificate.getIssuer()).toStrictEqual({
+      data: {
+        CN: '2I66J6-ellx7jHctgES2dGWlhhDhsIvu_GASPuCEF08',
+      },
+      simple: 'CN=2I66J6-ellx7jHctgES2dGWlhhDhsIvu_GASPuCEF08',
+    });
     const validity = x509Certificate.getValidity();
     expect(validity.notBefore).toBeInstanceOf(Date);
     expect(validity.notAfter).toBeInstanceOf(Date);
     expect(validity.notBefore.getTime()).toBe(1717322625000);
     expect(validity.notAfter.getTime()).toBe(1743242625000);
-    expect(x509Certificate.getSubject()).toBe(
-      'CN=2I66J6-ellx7jHctgES2dGWlhhDhsIvu_GASPuCEF08',
-    );
+    expect(x509Certificate.getSubject()).toStrictEqual({
+      data: {
+        CN: '2I66J6-ellx7jHctgES2dGWlhhDhsIvu_GASPuCEF08',
+      },
+      simple: 'CN=2I66J6-ellx7jHctgES2dGWlhhDhsIvu_GASPuCEF08',
+    });
     const subjectPublicKeyInfo = x509Certificate.getSubjectPublicKeyInfo();
     expect(subjectPublicKeyInfo.algorithm).toBe('ecPublicKey');
     expect(subjectPublicKeyInfo.publicKey).toBe(
@@ -59,17 +65,29 @@ describe('X509Certificate Parser', () => {
       '5ddd2890e38ce5cca517073658d2bb0f63be02b0',
     );
     expect(x509Certificate.getSignatureAlgorithm()).toBe('ecdsa-with-SHA256');
-    expect(x509Certificate.getIssuer()).toBe(
-      'C=US, ST=US-CA, O=CA-DMV, CN=California DMV IACA Root',
-    );
+    expect(x509Certificate.getIssuer()).toStrictEqual({
+      data: {
+        C: 'US',
+        CN: 'California DMV IACA Root',
+        O: 'CA-DMV',
+        ST: 'US-CA',
+      },
+      simple: 'C=US, ST=US-CA, O=CA-DMV, CN=California DMV IACA Root',
+    });
     const validity = x509Certificate.getValidity();
     expect(validity.notBefore).toBeInstanceOf(Date);
     expect(validity.notAfter).toBeInstanceOf(Date);
     expect(validity.notBefore.getTime()).toBe(1677691059000);
     expect(validity.notAfter.getTime()).toBe(1988731059000);
-    expect(x509Certificate.getSubject()).toBe(
-      'C=US, ST=US-CA, O=CA-DMV, CN=California DMV IACA Root',
-    );
+    expect(x509Certificate.getSubject()).toStrictEqual({
+      data: {
+        C: 'US',
+        CN: 'California DMV IACA Root',
+        O: 'CA-DMV',
+        ST: 'US-CA',
+      },
+      simple: 'C=US, ST=US-CA, O=CA-DMV, CN=California DMV IACA Root',
+    });
     const subjectPublicKeyInfo = x509Certificate.getSubjectPublicKeyInfo();
     expect(subjectPublicKeyInfo.algorithm).toBe('ecPublicKey');
     expect(subjectPublicKeyInfo.publicKey).toBe(

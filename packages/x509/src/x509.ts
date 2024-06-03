@@ -4,6 +4,7 @@ import { Base64 } from 'js-base64';
 
 export class X509Certificate {
   private parsedData: ASN1;
+  public data: { [key: string]: unknown } | null = null;
 
   constructor(pem: string) {
     const trimmedPem = pem
@@ -13,6 +14,29 @@ export class X509Certificate {
     const binaryCert = Base64.toUint8Array(trimmedPem);
     const parser = new ASN1Parser(binaryCert.buffer);
     this.parsedData = parser.parse();
+    this.parse();
+  }
+
+  private parse() {
+    const version = this.getVersion();
+    const serialNumber = this.getSerialNumber();
+    const signatureAlgorithm = this.getSignatureAlgorithm();
+    const issuer = this.getIssuer();
+    const validity = this.getValidity();
+    const subject = this.getSubject();
+    const subjectPublicKeyInfo = this.getSubjectPublicKeyInfo();
+    const extensions = this.getExtensions();
+
+    this.data = {
+      version,
+      serialNumber,
+      signatureAlgorithm,
+      issuer,
+      validity,
+      subject,
+      subjectPublicKeyInfo,
+      extensions,
+    };
   }
 
   public getVersion(): number {
@@ -64,19 +88,26 @@ export class X509Certificate {
     return oidMap[oidHex] || `Unknown OID: ${oidHex}`;
   }
 
-  public getIssuer(): string {
+  public getIssuer(): {
+    simple: string;
+    data: { [key: string]: string };
+  } {
     const tbsCertificate = (this.parsedData.value as ASN1[])[0];
     const issuerElement = (tbsCertificate.value as ASN1[])[3];
     if (issuerElement.tag === 0x30) {
       // SEQUENCE
       return this.parseName(issuerElement);
     }
-    return '';
+    return { simple: '', data: {} };
   }
 
-  private parseName(nameElement: ASN1): string {
+  private parseName(nameElement: ASN1): {
+    simple: string;
+    data: { [key: string]: string };
+  } {
     const rdnSequence = nameElement.value as ASN1[];
-    return rdnSequence
+    const data: { [key: string]: string } = {};
+    const simple = rdnSequence
       .map((rdnSet: ASN1) => {
         const rdn = (rdnSet.value as ASN1[])[0];
         const oid = this.oidToSimpleName(
@@ -85,9 +116,11 @@ export class X509Certificate {
         const value = this.bufferToString(
           (rdn.value as ASN1[])[1].value as ArrayBuffer,
         );
+        data[oid] = value;
         return `${oid}=${value}`;
       })
       .join(', ');
+    return { simple, data };
   }
 
   private oidToSimpleName(oid: ArrayBuffer): string {
@@ -126,14 +159,17 @@ export class X509Certificate {
     return { notBefore: new Date(0), notAfter: new Date(0) };
   }
 
-  public getSubject(): string {
+  public getSubject(): {
+    simple: string;
+    data: { [key: string]: string };
+  } {
     const tbsCertificate = (this.parsedData.value as ASN1[])[0];
     const subjectElement = (tbsCertificate.value as ASN1[])[5];
     if (subjectElement.tag === 0x30) {
       // SEQUENCE
       return this.parseName(subjectElement);
     }
-    return '';
+    return { simple: '', data: {} };
   }
 
   public getSubjectPublicKeyInfo(): { algorithm: string; publicKey: string } {

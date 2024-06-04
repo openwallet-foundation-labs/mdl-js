@@ -134,4 +134,18 @@ describe('CBOR decode', () => {
     const data = cborDecoder.decode(buffer);
     expect(data).toEqual(new Uint8Array([1, 2, 3]));
   });
+
+  test('buffer in array', () => {
+    const cborEncoder = new CBOREncoder(textencode);
+    const buffer = cborEncoder.encode([
+      new Uint8Array([1, 2, 3]),
+      new Uint8Array([4, 5, 6]),
+    ]);
+    const cborDecoder = new CBORDecoder(textdecode);
+    const data = cborDecoder.decode(buffer);
+    expect(data).toEqual([
+      new Uint8Array([1, 2, 3]),
+      new Uint8Array([4, 5, 6]),
+    ]);
+  });
 });

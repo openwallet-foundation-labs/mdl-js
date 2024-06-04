@@ -37,6 +37,12 @@ class Decoder {
     if (type === 0x39) return -this.decodeUint16() - 1;
     if (type === 0x3a) return -this.decodeUint32() - 1;
     if (type === 0x3b) return -this.decodeBigInt() - 1n;
+    if (type >= 0x40 && type <= 0x57) return this.decodeByteString(type - 0x40);
+    if (type === 0x58) return this.decodeByteString(this.decodeUint8());
+    if (type === 0x59) return this.decodeByteString(this.decodeUint16());
+    if (type === 0x5a) return this.decodeByteString(this.decodeUint32());
+    if (type === 0x5b)
+      return this.decodeByteString(Number(this.decodeBigInt())); // Warn: bigint to number: precision loss
     if (type === 0xf9) return this.decodeFloat16();
     if (type === 0xfa) return this.decodeFloat32();
     if (type === 0xfb) return this.decodeFloat64();
@@ -144,5 +150,11 @@ class Decoder {
       object[key] = this.decode();
     }
     return object;
+  }
+
+  private decodeByteString(length: number) {
+    const value = new Uint8Array(this.dataView.buffer, this.offset, length);
+    this.offset += length;
+    return value;
   }
 }

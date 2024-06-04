@@ -165,4 +165,15 @@ describe('CBOR encode', () => {
     const buffer2 = cborEncoder.encode({ a: 1, b: 2 });
     expect(areEqual(buffer1, buffer2)).toBe(true);
   });
+
+  test('buffer', () => {
+    const cborEncoder = new CBOREncoder(textencode);
+    const buffer = cborEncoder.encode(new Uint8Array([1, 2, 3, 4]));
+    const buffer1 = decode(buffer);
+    console.log(buffer1);
+    expect(
+      areEqual(buffer, new Uint8Array([0x44, 0x01, 0x02, 0x03, 0x04])),
+    ).toBe(true);
+    expect(areEqual(buffer1, new Uint8Array([1, 2, 3, 4]))).toBe(true);
+  });
 });

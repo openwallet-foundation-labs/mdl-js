@@ -126,4 +126,12 @@ describe('CBOR decode', () => {
     const data = cborDecoder.decode(new Uint8Array(buffer));
     expect(data).toEqual({ key: { nested: 'value' } });
   });
+
+  test('buffer', () => {
+    const cborEncoder = new CBOREncoder(textencode);
+    const buffer = cborEncoder.encode(new Uint8Array([1, 2, 3]));
+    const cborDecoder = new CBORDecoder(textdecode);
+    const data = cborDecoder.decode(buffer);
+    expect(data).toEqual(new Uint8Array([1, 2, 3]));
+  });
 });

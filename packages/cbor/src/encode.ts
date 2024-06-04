@@ -13,6 +13,9 @@ export class CBOREncoder {
     if (typeof value === 'number') return this.encodeNumber(value);
     if (typeof value === 'string') return this.encodeString(value);
     if (Array.isArray(value)) return this.encodeArray(value);
+    if (value instanceof Uint8Array) return this.encodeByteString(value);
+    if (value instanceof ArrayBuffer)
+      return this.encodeByteString(new Uint8Array(value));
 
     if (typeof value === 'object')
       return this.encodeObject(value as Record<string, unknown>);
@@ -248,6 +251,44 @@ export class CBOREncoder {
       offset += item.length;
     }
 
+    return result;
+  }
+
+  private encodeByteString(value: Uint8Array) {
+    const length = value.length;
+    let header: Uint8Array;
+
+    if (length <= 0x17) {
+      header = new Uint8Array([0x40 + length]);
+    } else if (length <= 0xff) {
+      header = new Uint8Array([0x58, length]);
+    } else if (length <= 0xffff) {
+      header = new Uint8Array([0x59, length >> 8, length & 0xff]);
+    } else if (length <= 0xffffffff) {
+      header = new Uint8Array([
+        0x5a,
+        length >> 24,
+        (length >> 16) & 0xff,
+        (length >> 8) & 0xff,
+        length & 0xff,
+      ]);
+    } else {
+      header = new Uint8Array([
+        0x5b,
+        length >> 56,
+        (length >> 48) & 0xff,
+        (length >> 40) & 0xff,
+        (length >> 32) & 0xff,
+        (length >> 24) & 0xff,
+        (length >> 16) & 0xff,
+        (length >> 8) & 0xff,
+        length & 0xff,
+      ]);
+    }
+
+    const result = new Uint8Array(header.length + value.length);
+    result.set(header);
+    result.set(value, header.length);
     return result;
   }
 }

@@ -176,4 +176,19 @@ describe('CBOR encode', () => {
     ).toBe(true);
     expect(areEqual(buffer1, new Uint8Array([1, 2, 3, 4]))).toBe(true);
   });
+
+  test('nested json', () => {
+    const cborEncoder = new CBOREncoder(textencode);
+    const data = {
+      name: 'John',
+      scores: [95, 87, 91],
+      metadata: {
+        timestamp: 1234567890,
+        type: 'exam',
+      },
+    };
+    const buffer = cborEncoder.encode(data);
+    const decoded = decode(buffer);
+    expect(decoded).toEqual(data);
+  });
 });

@@ -47,5 +47,8 @@
   },
   "devDependencies": {
     "cbor": "^9.0.2"
+  },
+  "dependencies": {
+    "cbor-redux": "^1.0.0"
   }
 }

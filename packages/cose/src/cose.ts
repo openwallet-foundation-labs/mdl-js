@@ -1,4 +1,4 @@
-import { concat } from '@m-doc/cbor';
+import { concat } from './utils';
 import { base64urlToUint8Array, uint8ArrayToBase64Url } from './base64url';
 
 export interface JsonWebKey {

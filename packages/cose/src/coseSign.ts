@@ -1,12 +1,7 @@
-import {
-  CBORDecoder,
-  CBOREncoder,
-  TextDecoder,
-  TextEncoder,
-} from '@m-doc/cbor';
 import { CoseKey } from './cose';
+import { CBOR } from '@m-doc/cbor';
 
-export type CoseSign1 = [Uint8Array, Uint8Array, Uint8Array, Uint8Array];
+export type CoseSign1 = [ArrayBuffer, ArrayBuffer, ArrayBuffer, ArrayBuffer];
 
 export type protectedHeader = {
   alg?: string;
@@ -28,22 +23,17 @@ export const COSE_ALGORITHMS = {
 
 export type OrPromise<T> = T | Promise<T>;
 export type Signer = (
-  data: Uint8Array,
+  data: ArrayBuffer,
   key: CoseKey,
   alg: string,
-) => OrPromise<Uint8Array>;
+) => OrPromise<ArrayBuffer>;
 export type Verifier = (
-  data: Uint8Array,
-  signature: Uint8Array,
+  data: ArrayBuffer,
+  signature: ArrayBuffer,
   option: { alg: string; kid?: string },
 ) => OrPromise<boolean>;
 
 export class CoseSign1Builder {
-  private cborEncoder: CBOREncoder;
-  constructor(textEncoder: TextEncoder) {
-    this.cborEncoder = new CBOREncoder(textEncoder);
-  }
-
   private getAlgValue(alg: string | undefined) {
     if (!alg) return COSE_ALGORITHMS.ES256;
     if (Object.keys(COSE_ALGORITHMS).includes(alg))
@@ -64,19 +54,19 @@ export class CoseSign1Builder {
 
   private createSigStructure(
     protectedHeader: protectedHeader,
-    payload: Uint8Array,
-  ): { sig: Uint8Array; encodedProtected: Uint8Array } {
+    payload: ArrayBuffer,
+  ): { sig: ArrayBuffer; encodedProtected: ArrayBuffer } {
     const header = this.convertHeader(protectedHeader);
-    const encodedProtected = this.cborEncoder.encode(header);
+    const encodedProtected = CBOR.encode(header);
 
     const SigStructure = [
       'Signature1', // context
       encodedProtected, // body_protected
-      new Uint8Array(0), // external_aad
+      new ArrayBuffer(0), // external_aad
       payload, // payload
     ];
 
-    const sig = this.cborEncoder.encode(SigStructure);
+    const sig = CBOR.encode(SigStructure);
     return { sig, encodedProtected };
   }
 
@@ -86,15 +76,15 @@ export class CoseSign1Builder {
     payload: Record<string, unknown>,
     key: CoseKey,
     signer: Signer,
-  ): Promise<Uint8Array> {
+  ): Promise<ArrayBuffer> {
     const { alg = 'ES256' } = protectedHeader;
-    const encodedPayload = this.cborEncoder.encode(payload);
+    const encodedPayload = CBOR.encode(payload);
     const { sig, encodedProtected } = this.createSigStructure(
       protectedHeader,
       encodedPayload,
     );
     const signature = await signer(sig, key, alg);
-    const encodedUnprotected = this.cborEncoder.encode(unprotectedHeader);
+    const encodedUnprotected = CBOR.encode(unprotectedHeader);
     // CBOR array structure: [protected, unprotected, payload, signature]
     const message: CoseSign1 = [
       encodedProtected,
@@ -102,18 +92,11 @@ export class CoseSign1Builder {
       encodedPayload,
       signature,
     ];
-    return this.cborEncoder.encode(message);
+    return CBOR.encode(message);
   }
 }
 
 export class CoseSign1Verifier {
-  private cborEncoder: CBOREncoder;
-  private cborDecoder: CBORDecoder;
-  constructor(textEncoder: TextEncoder, textDecoder: TextDecoder) {
-    this.cborEncoder = new CBOREncoder(textEncoder);
-    this.cborDecoder = new CBORDecoder(textDecoder);
-  }
-
   private algValueToAlg(algValue: number) {
     if (algValue === -7) return 'ES256';
     if (algValue === -35) return 'ES384';
@@ -123,13 +106,14 @@ export class CoseSign1Verifier {
   }
 
   async verify<T extends unknown = unknown>(
-    message: Uint8Array,
+    message: ArrayBuffer,
     verifier: Verifier,
   ): Promise<{ verified: boolean; payload: T }> {
-    const [protectedBytes, unprotected, payload, signature] =
-      this.cborDecoder.decode(message) as CoseSign1;
+    const [protectedBytes, unprotected, payload, signature] = CBOR.decode(
+      message,
+    ) as CoseSign1;
 
-    const protectedHeader = this.cborDecoder.decode<{
+    const protectedHeader = CBOR.decode<{
       '1': number;
       '4': string | undefined;
     }>(protectedBytes);
@@ -141,12 +125,12 @@ export class CoseSign1Verifier {
     const sigStructure = [
       'Signature1',
       protectedBytes,
-      new Uint8Array(0),
+      new ArrayBuffer(0),
       payload,
     ];
-    const toBeSigned = this.cborEncoder.encode(sigStructure);
+    const toBeSigned = CBOR.encode(sigStructure);
     const verified = await verifier(toBeSigned, signature, { alg, kid });
-    const decodedPayload = this.cborDecoder.decode(payload);
+    const decodedPayload = CBOR.decode(payload);
     return { verified, payload: decodedPayload as T };
   }
 }

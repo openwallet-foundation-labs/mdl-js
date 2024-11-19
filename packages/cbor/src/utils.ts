@@ -1,28 +1,27 @@
-export function concat(...buffers: Uint8Array[]): Uint8Array {
-  const size = buffers.reduce((acc, { length }) => acc + length, 0);
-  const buf = new Uint8Array(size);
-  let i = 0;
-  buffers.forEach((buffer) => {
-    buf.set(buffer, i);
-    i += buffer.length;
-  });
-  return buf;
-}
+import { encode, decode, TaggedValue } from 'cbor-redux';
+import { DataElement } from './DataElement';
 
-export function areEqual(buf1: Uint8Array, buf2: Uint8Array): boolean {
-  if (buf1 === buf2) {
-    return true;
-  }
-
-  if (buf1.byteLength !== buf2.byteLength) {
-    return false;
-  }
-
-  for (let i = 0; i < buf1.byteLength; i++) {
-    if (buf1[i] !== buf2[i]) {
-      return false;
+const encodeCBOR = <T = any>(data: T): ArrayBuffer =>
+  encode(data, (key, value) => {
+    if (value instanceof DataElement) return new TaggedValue(value.buffer, 24);
+    if (value instanceof Date) {
+      // According to ISO 23220-2, Date objects should be serialized as ISO 8601 strings with tag 0 (tdate = #6.0(tstr))
+      return new TaggedValue(value.toISOString(), 0);
     }
-  }
+    return value;
+  });
 
-  return true;
-}
+const decodeCBOR = <T = any>(buffer: ArrayBuffer): T =>
+  decode(buffer, (key, value) => {
+    if (value instanceof TaggedValue && value.tag === 24)
+      return DataElement.fromBuffer(value.value);
+    if (value instanceof TaggedValue && value.tag === 0) {
+      return new Date(value.value);
+    }
+    return value;
+  });
+
+export const CBOR = {
+  encode: encodeCBOR,
+  decode: decodeCBOR,
+};

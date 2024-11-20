@@ -61,9 +61,17 @@ importers:
         specifier: ^3.7.7
         version: 3.7.7
 
-  packages/mdl: {}
-
-  packages/mdoc: {}
+  packages/mdl:
+    dependencies:
+      '@m-doc/cbor':
+        specifier: workspace:*
+        version: link:../cbor
+      '@m-doc/cose':
+        specifier: workspace:*
+        version: link:../cose
+      '@m-doc/types':
+        specifier: workspace:*
+        version: link:../types
 
   packages/types: {}
 

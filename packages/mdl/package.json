@@ -44,5 +44,10 @@
       "cjs",
       "esm"
     ]
+  },
+  "dependencies": {
+    "@m-doc/cose": "workspace:*",
+    "@m-doc/cbor": "workspace:*",
+    "@m-doc/types": "workspace:*"
   }
 }

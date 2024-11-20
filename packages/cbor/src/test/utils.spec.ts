@@ -114,4 +114,30 @@ describe('CBOR utils', () => {
     expect(decoded.date).toBeInstanceOf(Date);
     expect(decoded.date.toISOString()).toBe(data.date.toISOString());
   });
+
+  test('encode/decode using Map', () => {
+    const map = new Map([
+      ['a', 1],
+      ['b', 2],
+    ]);
+    const encoded = CBOR.encode(map);
+    const decoded = CBOR.decode(encoded);
+
+    expect(decoded).toBeDefined();
+    expect(decoded.a).toBe(1);
+    expect(decoded.b).toBe(2);
+  });
+
+  test('encode/decode using Map with number keys', () => {
+    const map = new Map([
+      [1, 'a'],
+      [2, 'b'],
+    ]);
+    const encoded = CBOR.encode(map);
+    const decoded = CBOR.decode(encoded);
+
+    expect(decoded).toBeDefined();
+    expect(decoded[1]).toBe('a');
+    expect(decoded[2]).toBe('b');
+  });
 });

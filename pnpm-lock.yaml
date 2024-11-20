@@ -61,11 +61,7 @@ importers:
         specifier: ^3.7.7
         version: 3.7.7
 
-  packages/mdl:
-    dependencies:
-      cbor-redux:
-        specifier: ^1.0.0
-        version: 1.0.0
+  packages/mdl: {}
 
   packages/mdoc: {}
 

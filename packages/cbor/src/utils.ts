@@ -25,3 +25,10 @@ export const CBOR = {
   encode: encodeCBOR,
   decode: decodeCBOR,
 };
+
+export const copyUint8Array = (buffer: Uint8Array): ArrayBuffer => {
+  return buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength,
+  );
+};

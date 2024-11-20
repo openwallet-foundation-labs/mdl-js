@@ -1,4 +1,4 @@
-import { CBOR } from './utils';
+import { CBOR, copyUint8Array } from './utils';
 
 export type DataElementParam<T = unknown> = {
   data: T;
@@ -20,9 +20,11 @@ export class DataElement<T extends unknown = unknown> {
   }
 
   static fromBuffer<T extends unknown = unknown>(
-    buffer: ArrayBuffer,
+    buffer: ArrayBuffer | Uint8Array,
   ): DataElement<T> {
-    const data = CBOR.decode(buffer);
-    return new DataElement({ data, buffer });
+    const arrayBuffer =
+      buffer instanceof Uint8Array ? copyUint8Array(buffer) : buffer.slice(0);
+    const data = CBOR.decode<T>(arrayBuffer);
+    return new DataElement({ buffer: arrayBuffer, data });
   }
 }

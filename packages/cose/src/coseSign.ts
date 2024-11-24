@@ -1,13 +1,8 @@
 import { CoseKey } from './cose';
 import { CBOR } from '@m-doc/cbor';
+import { OrPromise, protectedHeader } from './types';
 
 export type CoseSign1 = [ArrayBuffer, ArrayBuffer, ArrayBuffer, ArrayBuffer];
-
-export type protectedHeader = {
-  alg?: string;
-  kid?: string;
-  [key: string]: unknown;
-};
 
 export const COSE_HEADERS = {
   alg: '1',
@@ -21,7 +16,6 @@ export const COSE_ALGORITHMS = {
   EDDSA: '-8',
 } as const;
 
-export type OrPromise<T> = T | Promise<T>;
 export type Signer = (
   data: ArrayBuffer,
   key: CoseKey,

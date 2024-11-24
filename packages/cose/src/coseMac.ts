@@ -1,19 +1,13 @@
 import { CBOR } from '@m-doc/cbor';
 import { hkdf } from '@panva/hkdf';
 import { areBuffersEqual } from './utils';
+import { OrPromise, protectedHeader } from './types';
 
 export type CoseMac0 = [ArrayBuffer, ArrayBuffer, ArrayBuffer, ArrayBuffer];
-export type OrPromise<T> = T | Promise<T>;
 
 export const COSE_MAC_ALGORITHMS = {
   'HMAC-SHA-256': 5,
 } as const;
-
-export type protectedHeader = {
-  alg?: string;
-  kid?: string;
-  [key: string]: unknown;
-};
 
 type MacGenerator = (
   data: ArrayBuffer,
@@ -21,6 +15,7 @@ type MacGenerator = (
 ) => OrPromise<ArrayBuffer>;
 
 export class CoseMac0Builder {
+  // TODO: fix
   async deriveEMacKey(
     ZAB: ArrayBuffer,
     sessionTranscriptBytes: ArrayBuffer,

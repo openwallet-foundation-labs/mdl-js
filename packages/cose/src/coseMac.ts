@@ -1,112 +1,172 @@
 import { CBOR } from '@m-doc/cbor';
-import { hkdf } from '@panva/hkdf';
-import { areBuffersEqual } from './utils';
 import { OrPromise, protectedHeader } from './types';
 
-export type CoseMac0 = [ArrayBuffer, ArrayBuffer, ArrayBuffer, ArrayBuffer];
+export type CoseMac0 = [
+  ArrayBuffer, // protected header
+  Record<string, unknown>, // unprotected header
+  ArrayBuffer, // payload
+  ArrayBuffer, // tag
+];
 
 export const COSE_MAC_ALGORITHMS = {
   'HMAC-SHA-256': 5,
+  'HMAC-SHA-384': 6,
+  'HMAC-SHA-512': 7,
 } as const;
 
-type MacGenerator = (
+export type MacFunction = (
   data: ArrayBuffer,
   key: ArrayBuffer,
+  options: { alg: string; kid?: Uint8Array },
 ) => OrPromise<ArrayBuffer>;
 
-export class CoseMac0Builder {
-  // TODO: fix
-  async deriveEMacKey(
-    ZAB: ArrayBuffer,
-    sessionTranscriptBytes: ArrayBuffer,
-  ): Promise<Uint8Array> {
-    const hash = 'SHA-256';
-    const salt = await crypto.subtle.digest('SHA-256', sessionTranscriptBytes);
-    const info = new TextEncoder().encode('EMacKey');
-    const length = 32; // octets
+export type MacVerifier = (
+  data: ArrayBuffer,
+  tag: ArrayBuffer,
+  options: { alg: string; kid?: Uint8Array; certificate?: Uint8Array },
+) => OrPromise<boolean>;
 
-    return hkdf(hash, new Uint8Array(ZAB), new Uint8Array(salt), info, length);
+export type Mac0Data = {
+  protectedHeader: ArrayBuffer;
+  unprotectedHeader: Record<string, unknown>;
+  payload: ArrayBuffer;
+  tag?: ArrayBuffer;
+};
+
+export class Mac0 {
+  protectedHeader: ArrayBuffer;
+  unprotectedHeader: Record<string, unknown>;
+  payload: ArrayBuffer;
+  tag?: ArrayBuffer;
+
+  constructor(param: Mac0Data) {
+    this.protectedHeader = param.protectedHeader;
+    this.unprotectedHeader = param.unprotectedHeader;
+    this.payload = param.payload;
+    this.tag = param.tag;
+  }
+
+  static fromBuffer(buffer: ArrayBuffer) {
+    const [protectedHeader, unprotectedHeader, payload, tag] =
+      CBOR.decode<CoseMac0>(buffer);
+    return new Mac0({
+      protectedHeader,
+      unprotectedHeader,
+      payload,
+      tag,
+    });
+  }
+
+  get data(): CoseMac0 {
+    return [
+      this.protectedHeader,
+      this.unprotectedHeader,
+      this.payload,
+      this.tag ?? new ArrayBuffer(0),
+    ];
+  }
+
+  get decodedData() {
+    return {
+      protectedHeader: CBOR.decode(this.protectedHeader),
+      unprotectedHeader: this.unprotectedHeader,
+      payload: CBOR.decode(this.payload),
+      tag: this.tag,
+    };
+  }
+
+  private getAlgValue(alg: string | undefined) {
+    if (!alg) return COSE_MAC_ALGORITHMS['HMAC-SHA-256'];
+    if (Object.keys(COSE_MAC_ALGORITHMS).includes(alg))
+      return COSE_MAC_ALGORITHMS[alg as keyof typeof COSE_MAC_ALGORITHMS];
+    return COSE_MAC_ALGORITHMS['HMAC-SHA-256'];
   }
 
   private convertHeader(protectedHeader: protectedHeader) {
     const { alg, ...rest } = protectedHeader;
+    const algValue = this.getAlgValue(alg);
     return {
-      '1': COSE_MAC_ALGORITHMS['HMAC-SHA-256'],
+      '1': algValue, // alg label is 1 in COSE
       ...rest,
     };
   }
 
-  private createMacStructure(
-    protectedHeader: protectedHeader,
-    payload: ArrayBuffer,
-  ): { macData: ArrayBuffer; encodedProtected: ArrayBuffer } {
+  setProtectedHeader(protectedHeader: protectedHeader) {
     const header = this.convertHeader(protectedHeader);
     const encodedProtected = CBOR.encode(header);
+    this.protectedHeader = encodedProtected;
+  }
 
+  private createMacStructure() {
     const MacStructure = [
       'MAC0', // context
-      encodedProtected, // body_protected
+      this.protectedHeader, // body_protected
       new ArrayBuffer(0), // external_aad
-      payload, // payload
+      this.payload, // payload
     ];
 
-    const macData = CBOR.encode(MacStructure);
-    return { macData, encodedProtected };
+    return CBOR.encode(MacStructure);
   }
 
   async mac(
-    protectedHeader: protectedHeader,
-    unprotectedHeader: Record<string, unknown>,
-    deviceAuthenticationBytes: ArrayBuffer,
-    ZAB: ArrayBuffer,
-    sessionTranscriptBytes: ArrayBuffer,
-    macGenerator: MacGenerator,
+    key: ArrayBuffer,
+    alg: string,
+    macFunction: MacFunction,
   ): Promise<ArrayBuffer> {
-    const EMacKey = await this.deriveEMacKey(ZAB, sessionTranscriptBytes);
+    const macData = this.createMacStructure();
+    const kid = this.unprotectedHeader['4'] as Uint8Array | undefined;
+    const tag = await macFunction(macData, key, { alg, kid });
 
-    // payload is null in COSE_Mac0 for mdoc
-    const nullPayload = CBOR.encode(null);
-
-    const { macData, encodedProtected } = this.createMacStructure(
-      protectedHeader,
-      deviceAuthenticationBytes, // detached content
-    );
-
-    const tag = await macGenerator(macData, EMacKey);
-    const encodedUnprotected = CBOR.encode(unprotectedHeader);
-
-    // CBOR array structure: [protected, unprotected, payload, tag]
     const message: CoseMac0 = [
-      encodedProtected,
-      encodedUnprotected,
-      nullPayload,
+      this.protectedHeader,
+      this.unprotectedHeader,
+      this.payload,
       tag,
     ];
-
     return CBOR.encode(message);
   }
-}
 
-export class CoseMac0Verifier {
-  async verify(
-    message: ArrayBuffer,
-    ZAB: ArrayBuffer,
-    sessionTranscriptBytes: ArrayBuffer,
-    macVerifier: MacGenerator,
-  ): Promise<boolean> {
-    const [protectedBytes, unprotected, payload, tag] = CBOR.decode(
-      message,
-    ) as CoseMac0;
+  private algValueToAlg(algValue: number): string {
+    switch (algValue) {
+      case 5:
+        return 'HMAC-SHA-256';
+      case 6:
+        return 'HMAC-SHA-384';
+      case 7:
+        return 'HMAC-SHA-512';
+      default:
+        return 'HMAC-SHA-256';
+    }
+  }
 
-    const EMacKey = await new CoseMac0Builder().deriveEMacKey(
-      ZAB,
-      sessionTranscriptBytes,
-    );
+  async verify<T extends unknown = unknown>(
+    verifyFunction: MacVerifier,
+  ): Promise<{ verified: boolean; payload: T }> {
+    if (this.tag === undefined) {
+      throw new Error('Tag is not set');
+    }
 
-    const macStructure = ['MAC0', protectedBytes, new ArrayBuffer(0), payload];
-    const macData = CBOR.encode(macStructure);
+    const protectedHeader = CBOR.decode<{ '1': number }>(this.protectedHeader);
+    const algValue = protectedHeader['1'] || 5;
+    const alg = this.algValueToAlg(algValue);
+    const kid = this.unprotectedHeader['4'] as Uint8Array | undefined;
+    const certificate = this.unprotectedHeader['33'] as Uint8Array | undefined;
 
-    const computedTag = await macVerifier(macData, EMacKey);
-    return areBuffersEqual(tag, computedTag);
+    const macStructure = [
+      'MAC0',
+      this.protectedHeader,
+      new ArrayBuffer(0),
+      this.payload,
+    ];
+    const toBeVerified = CBOR.encode(macStructure);
+
+    const verified = await verifyFunction(toBeVerified, this.tag, {
+      alg,
+      kid,
+      certificate,
+    });
+    const decodedPayload = CBOR.decode(this.payload);
+
+    return { verified, payload: decodedPayload as T };
   }
 }

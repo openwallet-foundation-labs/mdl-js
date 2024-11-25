@@ -1,5 +1,5 @@
 import { DataElement } from '@m-doc/cbor';
-import { Hasher } from './types';
+import { DigestAlgorithm, Hasher } from './types';
 
 export type IssuerSignedItemParams<T extends unknown = unknown> = {
   digestID: number;
@@ -39,8 +39,8 @@ export class IssuerSignedItem<T extends unknown = unknown> {
     return this.dataItem.data;
   }
 
-  async digest(hasher: Hasher): Promise<ArrayBuffer> {
-    return hasher(this.dataItem.buffer);
+  async digest(hasher: Hasher, alg: DigestAlgorithm): Promise<ArrayBuffer> {
+    return hasher(this.dataItem.buffer, alg);
   }
 
   serialize() {

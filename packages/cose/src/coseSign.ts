@@ -23,7 +23,6 @@ export const COSE_ALGORITHMS = {
 
 export type Signer = (
   data: ArrayBuffer,
-  key: CoseKey,
   option: { alg: string; kid?: Uint8Array },
 ) => OrPromise<ArrayBuffer>;
 export type Sign1Verifier = (
@@ -115,10 +114,10 @@ export class Sign1 {
     return sig;
   }
 
-  async sign(key: CoseKey, alg: string, signer: Signer): Promise<ArrayBuffer> {
+  async sign(alg: string, signer: Signer): Promise<ArrayBuffer> {
     const sig = this.createSigStructure();
     const kid = this.unprotectedHeader['4'] as Uint8Array | undefined;
-    const signature = await signer(sig, key, { alg, kid });
+    const signature = await signer(sig, { alg, kid });
     // CBOR array structure: [protected, unprotected, payload, signature]
     const message: CoseSign1 = [
       this.protectedHeader,

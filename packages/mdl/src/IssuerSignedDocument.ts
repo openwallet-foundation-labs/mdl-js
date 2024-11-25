@@ -1,10 +1,19 @@
 import { DataElement } from '@m-doc/cbor';
 import { IssuerSignedItem, IssuerSignedItemParams } from './IssuerSignedItem';
-import { RandomGenerator } from './types';
+import {
+  DeviceKeyInfo,
+  DigestAlgorithm,
+  Hasher,
+  MSO,
+  RandomGenerator,
+  ValidityInfo,
+} from './types';
+import { IssuerAuth } from './issuerAuth';
+import { Signer } from '@m-doc/cose';
 
 export type issuerSigned = {
   namespaces: Map<string, Array<IssuerSignedItem>>;
-  issuerAuth?: any;
+  issuerAuth?: IssuerAuth;
 };
 
 export type IssuerSignedDocumentParams = {
@@ -58,6 +67,47 @@ export class IssuerSignedDocument {
       return item;
     });
     this.issuerSigned.namespaces.set(name, issuerSignedItems);
+  }
+
+  async calculateValueDigest(hasher: Hasher, digestAlgorithm: DigestAlgorithm) {
+    const valueDigests: Map<string, Map<number, ArrayBuffer>> = new Map();
+    this.issuerSigned.namespaces.forEach(async (namespace, name) => {
+      const promises = namespace.map(async (item) => {
+        const digest = await item.digest(hasher, digestAlgorithm);
+        return digest;
+      });
+      const digests = await Promise.all(promises);
+      const map = new Map<number, ArrayBuffer>();
+      digests.forEach((digest, idx) => {
+        map.set(idx, digest);
+      });
+      valueDigests.set(name, map);
+    });
+    return valueDigests;
+  }
+
+  async signIssuerAuth(
+    signerFunc: { alg: string; signer: Signer },
+    hasherFunc: { digestAlgorithm: DigestAlgorithm; hasher: Hasher },
+    validityInfo: ValidityInfo,
+    deviceKeyInfo?: DeviceKeyInfo,
+    certificate?: Uint8Array,
+  ) {
+    const valueDigests = await this.calculateValueDigest(
+      hasherFunc.hasher,
+      hasherFunc.digestAlgorithm,
+    );
+    const mso: MSO = {
+      docType: this.docType,
+      version: '1.0',
+      digestAlgorithm: hasherFunc.digestAlgorithm,
+      valueDigests,
+      validityInfo,
+      deviceKeyInfo,
+    };
+
+    const issuerAuth = new IssuerAuth({ mso, certificate });
+    return issuerAuth.sign(signerFunc.alg, signerFunc.signer);
   }
 
   serialize() {

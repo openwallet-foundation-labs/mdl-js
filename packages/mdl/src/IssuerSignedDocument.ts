@@ -111,13 +111,26 @@ export class IssuerSignedDocument {
   }
 
   serialize() {
+    const namespaces = this.serializeNamespace();
+    const issuerAuth = this.serializeIssuerAuth();
+    if (!this.deviceSigned) {
+      return {
+        docType: this.docType,
+        issuerSigned: {
+          namespaces,
+          issuerAuth,
+        },
+      };
+    }
+
+    const deviceSigned = this.serializeDeviceSigned();
     return {
       docType: this.docType,
       issuerSigned: {
-        namespaces: this.serializeNamespace(),
-        issuerAuth: this.serializeIssuerAuth(),
+        namespaces,
+        issuerAuth,
       },
-      deviceSigned: this.serializeDeviceSigned(),
+      deviceSigned,
     };
   }
 
@@ -131,9 +144,10 @@ export class IssuerSignedDocument {
   }
 
   private serializeIssuerAuth() {
-    return {
-      todo: 'todo',
-    };
+    if (!this.issuerSigned.issuerAuth) {
+      throw new Error('IssuerAuth is not set');
+    }
+    return this.issuerSigned.issuerAuth.serialize();
   }
 
   private serializeDeviceSigned() {

@@ -110,6 +110,35 @@ export class IssuerSignedDocument {
     return issuerAuth.sign(signerFunc.alg, signerFunc.signer);
   }
 
+  public keys() {
+    const keys: Record<string, Array<string>> = {};
+    this.issuerSigned.namespaces.forEach((value, key) => {
+      keys[key] = value.map((item) => item.rawData.elementIdentifier);
+    });
+    return keys;
+  }
+
+  public select(keys: Record<string, Array<string>>) {
+    const newNamespaces: Map<string, Array<IssuerSignedItem>> = new Map();
+    for (const [name, selectedKeys] of Object.entries(keys)) {
+      const namespace = this.issuerSigned.namespaces.get(name);
+      if (!namespace) {
+        continue;
+      }
+      const newNamespace = namespace.filter((item) =>
+        selectedKeys.includes(item.rawData.elementIdentifier),
+      );
+      newNamespaces.set(name, newNamespace);
+    }
+
+    return new IssuerSignedDocument({
+      docType: this.docType,
+      issuerSigned: {
+        namespaces: newNamespaces,
+      },
+    });
+  }
+
   serialize() {
     const namespaces = this.serializeNamespace();
     const issuerAuth = this.serializeIssuerAuth();
@@ -155,10 +184,4 @@ export class IssuerSignedDocument {
       todo: 'todo',
     };
   }
-
-  // MUST, from data and from buffer
-
-  // namespace manange, add delete.
-
-  // sign
 }

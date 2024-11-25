@@ -1,4 +1,4 @@
-import { Sign1, Signer } from '@m-doc/cose';
+import { Sign1, Sign1Verifier, Signer } from '@m-doc/cose';
 import { MSO } from './types';
 import { CBOR, DataElement } from '@m-doc/cbor';
 
@@ -34,6 +34,10 @@ export class IssuerAuth {
 
   async sign(alg: string, signer: Signer) {
     return this.sign1.sign(alg, signer);
+  }
+
+  async verify(verifier: Sign1Verifier) {
+    return this.sign1.verify(verifier);
   }
 
   serialize() {

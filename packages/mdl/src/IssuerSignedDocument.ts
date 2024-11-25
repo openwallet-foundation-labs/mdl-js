@@ -9,7 +9,7 @@ import {
   ValidityInfo,
 } from './types';
 import { IssuerAuth } from './issuerAuth';
-import { Signer } from '@m-doc/cose';
+import { Sign1Verifier, Signer } from '@m-doc/cose';
 
 export type issuerSigned = {
   namespaces: Map<string, Array<IssuerSignedItem>>;
@@ -108,6 +108,13 @@ export class IssuerSignedDocument {
 
     const issuerAuth = new IssuerAuth({ mso, certificate });
     return issuerAuth.sign(signerFunc.alg, signerFunc.signer);
+  }
+
+  async validateIssuerAuth(verifier: Sign1Verifier) {
+    if (!this.issuerSigned.issuerAuth) {
+      throw new Error('IssuerAuth is not set');
+    }
+    return this.issuerSigned.issuerAuth.verify(verifier);
   }
 
   public keys() {

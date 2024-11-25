@@ -1,6 +1,6 @@
 import { Sign1, Signer } from '@m-doc/cose';
 import { MSO } from './types';
-import { CBOR } from '@m-doc/cbor';
+import { CBOR, DataElement } from '@m-doc/cbor';
 
 export type IssuerAuthData = {
   mso: MSO;
@@ -9,15 +9,15 @@ export type IssuerAuthData = {
 
 export class IssuerAuth {
   private sign1: Sign1;
-  public mso: MSO;
+  public mso: DataElement<MSO>;
 
   constructor(param: IssuerAuthData | Sign1) {
     if (param instanceof Sign1) {
       this.sign1 = param;
-      this.mso = CBOR.decode<MSO>(this.sign1.payload);
+      this.mso = DataElement.fromData(param.decodedData.payload);
       return;
     }
-    this.mso = param.mso;
+    this.mso = DataElement.fromData(param.mso);
     const defaultHeader = CBOR.encode({
       '1': -7, // ES256
     });

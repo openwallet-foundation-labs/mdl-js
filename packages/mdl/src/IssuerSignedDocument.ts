@@ -10,22 +10,28 @@ import {
 } from './types';
 import { IssuerAuth } from './issuerAuth';
 import { Sign1Verifier, Signer } from '@m-doc/cose';
+import { DeviceAuth } from './DeviceAuth';
 
 export type issuerSigned = {
   namespaces: Map<string, Array<IssuerSignedItem>>;
   issuerAuth?: IssuerAuth;
 };
 
+export type DeviceSigned = {
+  namespaces: DataElement<{}>;
+  deviceAuth: DeviceAuth;
+};
+
 export type IssuerSignedDocumentParams = {
   docType?: string;
   issuerSigned?: issuerSigned;
-  deviceSigned?: any;
+  deviceSigned?: DeviceSigned;
 };
 
 export class IssuerSignedDocument {
   private docType: string;
   private issuerSigned: issuerSigned;
-  private deviceSigned: any;
+  private deviceSigned?: DeviceSigned;
 
   constructor(params: IssuerSignedDocumentParams) {
     this.docType = params.docType || 'org.iso.18013.5.1.mDL';

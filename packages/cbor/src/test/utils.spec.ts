@@ -175,4 +175,15 @@ describe('CBOR utils', () => {
     const decoded = CBOR.decode(arraybuffer);
     expect(decoded).toBeDefined();
   });
+
+  test('encode undefined', () => {
+    const encoded = CBOR.encode({ a: 1, b: undefined });
+    expect(encoded).toBeDefined();
+
+    const decoded = CBOR.decode(encoded);
+    expect(decoded).toBeDefined();
+    expect(decoded.a).toBeDefined();
+    expect(decoded.b).toBeUndefined();
+    expect(Object.keys(decoded)).toEqual(['a', 'b']);
+  });
 });

@@ -1,5 +1,6 @@
 import { CBOR } from '@m-doc/cbor';
 import { OrPromise, protectedHeader } from './types';
+import { constantTimeArrayBufferCompare } from './utils';
 
 export type CoseMac0 = [
   ArrayBuffer, // protected header
@@ -19,12 +20,6 @@ export type MacFunction = (
   key: ArrayBuffer,
   options: { alg: string; kid?: Uint8Array },
 ) => OrPromise<ArrayBuffer>;
-
-export type MacVerifier = (
-  data: ArrayBuffer,
-  tag: ArrayBuffer,
-  options: { alg: string; kid?: Uint8Array; certificate?: Uint8Array },
-) => OrPromise<boolean>;
 
 export type Mac0Data = {
   protectedHeader: ArrayBuffer;
@@ -140,7 +135,7 @@ export class Mac0 {
   }
 
   async verify<T extends unknown = unknown>(
-    verifyFunction: MacVerifier,
+    macFunction: MacFunction,
   ): Promise<{ verified: boolean; payload: T }> {
     if (this.tag === undefined) {
       throw new Error('Tag is not set');
@@ -150,21 +145,14 @@ export class Mac0 {
     const algValue = protectedHeader['1'] || 5;
     const alg = this.algValueToAlg(algValue);
     const kid = this.unprotectedHeader['4'] as Uint8Array | undefined;
-    const certificate = this.unprotectedHeader['33'] as Uint8Array | undefined;
 
-    const macStructure = [
-      'MAC0',
-      this.protectedHeader,
-      new ArrayBuffer(0),
-      this.payload,
-    ];
-    const toBeVerified = CBOR.encode(macStructure);
-
-    const verified = await verifyFunction(toBeVerified, this.tag, {
+    const macStructure = this.createMacStructure();
+    const computedTag = await macFunction(macStructure, this.tag, {
       alg,
       kid,
-      certificate,
     });
+
+    const verified = constantTimeArrayBufferCompare(computedTag, this.tag);
     const decodedPayload = CBOR.decode(this.payload);
 
     return { verified, payload: decodedPayload as T };

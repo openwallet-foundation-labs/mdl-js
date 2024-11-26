@@ -5,6 +5,7 @@ import { CBOR, DataElement } from '@m-doc/cbor';
 export type IssuerAuthData = {
   mso: MSO;
   certificate?: Uint8Array;
+  unprotectedHeader?: Record<string, unknown>;
 };
 
 export class IssuerAuth {
@@ -22,8 +23,8 @@ export class IssuerAuth {
       '1': -7, // ES256
     });
     const unprotectedHeader = param.certificate
-      ? { '33': param.certificate }
-      : {};
+      ? { '33': param.certificate, ...param.unprotectedHeader }
+      : { ...param.unprotectedHeader };
 
     this.sign1 = new Sign1({
       protectedHeader: defaultHeader,

@@ -35,3 +35,9 @@ export type MSO = {
   validityInfo: ValidityInfo;
   deviceKeyInfo?: DeviceKeyInfo;
 };
+
+export type SessionTranscript = {
+  deviceEngagementBytes: ArrayBuffer | null;
+  eReaderKeyBytes: ArrayBuffer | null;
+  handover: string[];
+};

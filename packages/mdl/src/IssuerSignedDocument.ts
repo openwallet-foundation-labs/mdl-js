@@ -6,11 +6,12 @@ import {
   Hasher,
   MSO,
   RandomGenerator,
+  SessionTranscript,
   ValidityInfo,
 } from './types';
 import { IssuerAuth } from './issuerAuth';
-import { Sign1Verifier, Signer } from '@m-doc/cose';
-import { DeviceAuth } from './DeviceAuth';
+import { MacFunction, Sign1Verifier, Signer } from '@m-doc/cose';
+import { DeviceAuthSign1, DeviceAuthMac0 } from './DeviceAuth';
 
 export type issuerSigned = {
   namespaces: Map<string, Array<IssuerSignedItem>>;
@@ -18,9 +19,17 @@ export type issuerSigned = {
 };
 
 export type DeviceSigned = {
-  namespaces: DataElement<{}>;
-  deviceAuth: DeviceAuth;
+  namespaces: Map<string, Record<string, unknown>>;
+  deviceAuth?: DeviceAuth;
 };
+
+export type DeviceAuth =
+  | {
+      deviceSignature: DeviceAuthSign1;
+    }
+  | {
+      deviceMac: DeviceAuthMac0;
+    };
 
 export type IssuerSignedDocumentParams = {
   docType?: string;
@@ -98,6 +107,7 @@ export class IssuerSignedDocument {
     validityInfo: ValidityInfo,
     deviceKeyInfo?: DeviceKeyInfo,
     certificate?: Uint8Array,
+    unprotectedHeader?: Record<string, unknown>,
   ) {
     const valueDigests = await this.calculateValueDigest(
       hasherFunc.hasher,
@@ -112,7 +122,11 @@ export class IssuerSignedDocument {
       deviceKeyInfo,
     };
 
-    const issuerAuth = new IssuerAuth({ mso, certificate });
+    const issuerAuth = new IssuerAuth({
+      mso,
+      certificate,
+      unprotectedHeader,
+    });
     return issuerAuth.sign(signerFunc.alg, signerFunc.signer);
   }
 
@@ -129,6 +143,17 @@ export class IssuerSignedDocument {
       keys[key] = value.map((item) => item.rawData.elementIdentifier);
     });
     return keys;
+  }
+
+  public getClaims() {
+    const claims: Record<string, Record<string, unknown>> = {};
+    this.issuerSigned.namespaces.forEach((value, key) => {
+      claims[key] = {};
+      value.forEach((item) => {
+        claims[key][item.rawData.elementIdentifier] = item.rawData.elementValue;
+      });
+    });
+    return claims;
   }
 
   public select(keys: Record<string, Array<string>>) {
@@ -150,6 +175,70 @@ export class IssuerSignedDocument {
         namespaces: newNamespaces,
       },
     });
+  }
+
+  public addDeviceNamespace(name: string, claims: Record<string, unknown>) {
+    if (!this.deviceSigned) {
+      this.deviceSigned = {
+        namespaces: new Map<string, Record<string, unknown>>(),
+      };
+    }
+
+    this.deviceSigned.namespaces.set(name, claims);
+  }
+
+  public async addDeviceSignature(
+    sessionTranscript: SessionTranscript,
+    signData: { alg: string; signer: Signer },
+  ) {
+    if (this.deviceSigned === undefined) {
+      throw new Error('DeviceSigned is not set');
+    }
+
+    const deviceAuth = new DeviceAuthSign1({
+      sessionTranscript,
+      docType: this.docType,
+      namespaces: this.deviceSigned.namespaces,
+    });
+    await deviceAuth.sign(signData.alg, signData.signer);
+    this.deviceSigned.deviceAuth = { deviceSignature: deviceAuth };
+  }
+
+  public async verifyDeviceSignature(verifier: Sign1Verifier) {
+    if (
+      !this.deviceSigned?.deviceAuth ||
+      !('deviceSignature' in this.deviceSigned.deviceAuth)
+    ) {
+      throw new Error('DeviceAuth is not set');
+    }
+    return this.deviceSigned.deviceAuth.deviceSignature.verifySign(verifier);
+  }
+
+  public async addDeviceMac(
+    sessionTranscript: SessionTranscript,
+    mac: { alg: string; pubKey: ArrayBuffer; macFunction: MacFunction },
+  ) {
+    if (this.deviceSigned === undefined) {
+      throw new Error('DeviceSigned is not set');
+    }
+
+    const deviceAuth = new DeviceAuthMac0({
+      sessionTranscript,
+      docType: this.docType,
+      namespaces: this.deviceSigned.namespaces,
+    });
+    await deviceAuth.mac(mac.pubKey, mac.alg, mac.macFunction);
+    this.deviceSigned.deviceAuth = { deviceMac: deviceAuth };
+  }
+
+  public async verifyDeviceMac(pubKey: ArrayBuffer, macFunction: MacFunction) {
+    if (
+      !this.deviceSigned?.deviceAuth ||
+      !('deviceMac' in this.deviceSigned.deviceAuth)
+    ) {
+      throw new Error('DeviceAuth is not set');
+    }
+    return this.deviceSigned.deviceAuth.deviceMac.verify(pubKey, macFunction);
   }
 
   serialize() {
@@ -194,7 +283,33 @@ export class IssuerSignedDocument {
 
   private serializeDeviceSigned() {
     return {
-      todo: 'todo',
+      namespaces: this.serializeDeviceNamespace(),
+      deviceAuth: this.serializeDeviceAuth(),
     };
+  }
+
+  private serializeDeviceAuth() {
+    if (!this.deviceSigned?.deviceAuth) {
+      throw new Error('DeviceAuth is not set');
+    }
+
+    if ('deviceSignature' in this.deviceSigned.deviceAuth) {
+      return {
+        deviceSignature:
+          this.deviceSigned.deviceAuth.deviceSignature.serialize(),
+      };
+    }
+
+    return {
+      deviceMac: this.deviceSigned.deviceAuth.deviceMac.serialize(),
+    };
+  }
+
+  private serializeDeviceNamespace() {
+    if (!this.deviceSigned) {
+      throw new Error('DeviceSigned is not set');
+    }
+    const encoded = DataElement.fromData(this.deviceSigned.namespaces);
+    return encoded;
   }
 }

@@ -135,6 +135,7 @@ export class Mac0 {
   }
 
   async verify<T extends unknown = unknown>(
+    key: ArrayBuffer,
     macFunction: MacFunction,
   ): Promise<{ verified: boolean; payload: T }> {
     if (this.tag === undefined) {
@@ -147,7 +148,7 @@ export class Mac0 {
     const kid = this.unprotectedHeader['4'] as Uint8Array | undefined;
 
     const macStructure = this.createMacStructure();
-    const computedTag = await macFunction(macStructure, this.tag, {
+    const computedTag = await macFunction(macStructure, key, {
       alg,
       kid,
     });

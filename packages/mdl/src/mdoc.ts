@@ -1,3 +1,4 @@
+import { CBOR } from '@m-doc/cbor';
 import { IssuerSignedDocument } from './IssuerSignedDocument';
 import { MDocStatus } from './types';
 
@@ -18,7 +19,17 @@ export class MDoc {
     this.status = data.status ?? MDocStatus.OK;
   }
 
-  // encode, decode
+  encode() {
+    CBOR.encode({
+      version: this.version,
+      documents: this.documents.map((doc) => doc.serialize()),
+      status: this.status,
+    });
+  }
 
-  // verify
+  static fromBuffer(buffer: ArrayBuffer) {
+    // TODO: fix
+    const data = CBOR.decode<MDocData>(buffer);
+    return new MDoc(data);
+  }
 }

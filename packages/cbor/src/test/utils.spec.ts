@@ -186,4 +186,20 @@ describe('CBOR utils', () => {
     expect(decoded.b).toBeUndefined();
     expect(Object.keys(decoded)).toEqual(['a', 'b']);
   });
+
+  test('empty object', () => {
+    const encoded = CBOR.encode({});
+    const decoded = CBOR.decode(encoded);
+    expect(decoded).toBeDefined();
+    expect(decoded).toEqual({});
+    expect(Object.keys(decoded)).toEqual([]);
+  });
+
+  test('empty Map', () => {
+    const encoded = CBOR.encode(new Map());
+    const decoded = CBOR.decode(encoded);
+    expect(decoded).toBeDefined();
+    expect(decoded).toEqual({});
+    expect(Object.keys(decoded)).toEqual([]);
+  });
 });

@@ -123,6 +123,7 @@ export class IssuerSignedDocument {
     };
 
     const issuerAuth = new IssuerAuth({
+      alg: signerFunc.alg,
       mso,
       certificate,
       unprotectedHeader,
@@ -196,6 +197,7 @@ export class IssuerSignedDocument {
     }
 
     const deviceAuth = new DeviceAuthSign1({
+      alg: signData.alg,
       sessionTranscript,
       docType: this.docType,
       namespaces: this.deviceSigned.namespaces,
@@ -223,6 +225,7 @@ export class IssuerSignedDocument {
     }
 
     const deviceAuth = new DeviceAuthMac0({
+      alg: mac.alg,
       sessionTranscript,
       docType: this.docType,
       namespaces: this.deviceSigned.namespaces,

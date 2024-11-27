@@ -3,6 +3,7 @@ import { MSO } from './types';
 import { CBOR, DataElement } from '@m-doc/cbor';
 
 export type IssuerAuthData = {
+  alg: string;
   mso: MSO;
   certificate?: Uint8Array;
   unprotectedHeader?: Record<string, unknown>;
@@ -19,9 +20,8 @@ export class IssuerAuth {
       return;
     }
     this.mso = DataElement.fromData(param.mso);
-    const defaultHeader = CBOR.encode({
-      '1': -7, // ES256
-    });
+
+    const defaultHeader = CBOR.encode(Sign1.convertHeader({ alg: param.alg }));
     const unprotectedHeader = param.certificate
       ? { '33': param.certificate, ...param.unprotectedHeader }
       : { ...param.unprotectedHeader };

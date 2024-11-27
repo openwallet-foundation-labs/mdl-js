@@ -3,6 +3,7 @@ import { SessionTranscript } from './types';
 import { CBOR, DataElement } from '@m-doc/cbor';
 
 export interface DeviceAuthParams {
+  alg: string;
   sessionTranscript: SessionTranscript;
   docType: string;
   namespaces: Map<string, Record<string, unknown>>;
@@ -17,9 +18,7 @@ export class DeviceAuthMac0 {
       this.deviceMac = params;
       return;
     }
-    const defaultHeader = CBOR.encode({
-      '1': -7, // ES256
-    });
+    const defaultHeader = CBOR.encode(Mac0.convertHeader({ alg: params.alg }));
 
     this.deviceMac = new Mac0({
       protectedHeader: defaultHeader,
@@ -63,9 +62,7 @@ export class DeviceAuthSign1 {
       return;
     }
 
-    const defaultHeader = CBOR.encode({
-      '1': -7, // ES256
-    });
+    const defaultHeader = CBOR.encode(Sign1.convertHeader({ alg: params.alg }));
 
     this.deviceSign = new Sign1({
       protectedHeader: defaultHeader,

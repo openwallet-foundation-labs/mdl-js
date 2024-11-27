@@ -1,35 +1,11 @@
-import { CoseKey } from './cose';
 import { CBOR } from '@m-doc/cbor';
-import { OrPromise, protectedHeader } from './types';
-
-export type CoseSign1 = [
-  ArrayBuffer, // protected header
-  Record<string, unknown>, // unprotected header
-  ArrayBuffer, // payload
-  ArrayBuffer, // signature
-];
-
-export const COSE_HEADERS = {
-  alg: '1',
-  kid: '4',
-} as const;
-
-export const COSE_ALGORITHMS = {
-  ES256: '-7',
-  ES384: '-35',
-  ES512: '-36',
-  EDDSA: '-8',
-} as const;
-
-export type Signer = (
-  data: ArrayBuffer,
-  option: { alg: string; kid?: Uint8Array },
-) => OrPromise<ArrayBuffer>;
-export type Sign1Verifier = (
-  data: ArrayBuffer,
-  signature: ArrayBuffer,
-  option: { alg: string; kid?: Uint8Array; certificate?: Uint8Array },
-) => OrPromise<boolean>;
+import {
+  COSE_ALGORITHMS,
+  CoseSign1,
+  ProtectedHeader,
+  Sign1Verifier,
+  Signer,
+} from './types';
 
 export type Sign1Data = {
   protectedHeader: ArrayBuffer;
@@ -80,24 +56,24 @@ export class Sign1 {
     };
   }
 
-  private getAlgValue(alg: string | undefined) {
+  static getAlgValue(alg: string | undefined) {
     if (!alg) return COSE_ALGORITHMS.ES256;
     if (Object.keys(COSE_ALGORITHMS).includes(alg))
       return COSE_ALGORITHMS[alg as keyof typeof COSE_ALGORITHMS];
     return COSE_ALGORITHMS.ES256;
   }
 
-  private convertHeader(protectedHeader: protectedHeader) {
-    const { alg, kid, ...rest } = protectedHeader;
-    const algValue = this.getAlgValue(alg);
+  static convertHeader(protectedHeader: ProtectedHeader) {
+    const { alg, ...rest } = protectedHeader;
+    const algValue = Sign1.getAlgValue(alg);
     return {
       '1': algValue,
       ...rest,
     };
   }
 
-  setProtectedHeader(protectedHeader: protectedHeader) {
-    const header = this.convertHeader(protectedHeader);
+  setProtectedHeader(protectedHeader: ProtectedHeader) {
+    const header = Sign1.convertHeader(protectedHeader);
     const encodedProtected = CBOR.encode(header);
     this.protectedHeader = encodedProtected;
   }

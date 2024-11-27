@@ -1,25 +1,11 @@
 import { CBOR } from '@m-doc/cbor';
-import { OrPromise, protectedHeader } from './types';
+import {
+  COSE_MAC_ALGORITHMS,
+  CoseMac0,
+  MacFunction,
+  ProtectedHeader,
+} from './types';
 import { constantTimeArrayBufferCompare } from './utils';
-
-export type CoseMac0 = [
-  ArrayBuffer, // protected header
-  Record<string, unknown>, // unprotected header
-  ArrayBuffer, // payload
-  ArrayBuffer, // tag
-];
-
-export const COSE_MAC_ALGORITHMS = {
-  'HMAC-SHA-256': 5,
-  'HMAC-SHA-384': 6,
-  'HMAC-SHA-512': 7,
-} as const;
-
-export type MacFunction = (
-  data: ArrayBuffer,
-  key: ArrayBuffer,
-  options: { alg: string; kid?: Uint8Array },
-) => OrPromise<ArrayBuffer>;
 
 export type Mac0Data = {
   protectedHeader: ArrayBuffer;
@@ -70,24 +56,24 @@ export class Mac0 {
     };
   }
 
-  private getAlgValue(alg: string | undefined) {
+  static getAlgValue(alg: string | undefined) {
     if (!alg) return COSE_MAC_ALGORITHMS['HMAC-SHA-256'];
     if (Object.keys(COSE_MAC_ALGORITHMS).includes(alg))
       return COSE_MAC_ALGORITHMS[alg as keyof typeof COSE_MAC_ALGORITHMS];
     return COSE_MAC_ALGORITHMS['HMAC-SHA-256'];
   }
 
-  private convertHeader(protectedHeader: protectedHeader) {
+  static convertHeader(protectedHeader: ProtectedHeader) {
     const { alg, ...rest } = protectedHeader;
-    const algValue = this.getAlgValue(alg);
+    const algValue = Mac0.getAlgValue(alg);
     return {
       '1': algValue, // alg label is 1 in COSE
       ...rest,
     };
   }
 
-  setProtectedHeader(protectedHeader: protectedHeader) {
-    const header = this.convertHeader(protectedHeader);
+  setProtectedHeader(protectedHeader: ProtectedHeader) {
+    const header = Mac0.convertHeader(protectedHeader);
     const encodedProtected = CBOR.encode(header);
     this.protectedHeader = encodedProtected;
   }

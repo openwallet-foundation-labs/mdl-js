@@ -14,12 +14,12 @@ import { MacFunction, Sign1Verifier, Signer } from '@m-doc/cose';
 import { DeviceAuthSign1, DeviceAuthMac0 } from './DeviceAuth';
 
 export type issuerSigned = {
-  namespaces: Map<string, Array<IssuerSignedItem>>;
+  nameSpaces: Map<string, Array<IssuerSignedItem>>;
   issuerAuth?: IssuerAuth;
 };
 
 export type DeviceSigned = {
-  namespaces: Map<string, Record<string, unknown>>;
+  nameSpaces: Map<string, Record<string, unknown>>;
   deviceAuth?: DeviceAuth;
 };
 
@@ -45,7 +45,7 @@ export class IssuerSignedDocument {
   constructor(params: IssuerSignedDocumentParams) {
     this.docType = params.docType || 'org.iso.18013.5.1.mDL';
     this.issuerSigned = params.issuerSigned ?? {
-      namespaces: new Map<string, Array<IssuerSignedItem>>(),
+      nameSpaces: new Map<string, Array<IssuerSignedItem>>(),
     };
     this.deviceSigned = params.deviceSigned;
   }
@@ -57,7 +57,7 @@ export class IssuerSignedDocument {
   ) {
     const promises = Object.entries(claims).map(
       async ([key, value], idx: number) => {
-        const random = await randomGenerator();
+        const random = await randomGenerator(32);
         const issuerSignedItem = new IssuerSignedItem({
           digestID: idx,
           random,
@@ -68,7 +68,7 @@ export class IssuerSignedDocument {
       },
     );
     const namespace = await Promise.all(promises);
-    this.issuerSigned.namespaces.set(name, namespace);
+    this.issuerSigned.nameSpaces.set(name, namespace);
   }
 
   async namespaceFromDataElement(
@@ -81,12 +81,12 @@ export class IssuerSignedDocument {
       );
       return item;
     });
-    this.issuerSigned.namespaces.set(name, issuerSignedItems);
+    this.issuerSigned.nameSpaces.set(name, issuerSignedItems);
   }
 
   async calculateValueDigest(hasher: Hasher, digestAlgorithm: DigestAlgorithm) {
     const valueDigests: Map<string, Map<number, ArrayBuffer>> = new Map();
-    this.issuerSigned.namespaces.forEach(async (namespace, name) => {
+    this.issuerSigned.nameSpaces.forEach(async (namespace, name) => {
       const promises = namespace.map(async (item) => {
         const digest = await item.digest(hasher, digestAlgorithm);
         return digest;
@@ -128,7 +128,8 @@ export class IssuerSignedDocument {
       certificate,
       unprotectedHeader,
     });
-    return issuerAuth.sign(signerFunc.alg, signerFunc.signer);
+    await issuerAuth.sign(signerFunc.alg, signerFunc.signer);
+    this.issuerSigned.issuerAuth = issuerAuth;
   }
 
   async validateIssuerAuth(verifier: Sign1Verifier) {
@@ -140,7 +141,7 @@ export class IssuerSignedDocument {
 
   public keys() {
     const keys: Record<string, Array<string>> = {};
-    this.issuerSigned.namespaces.forEach((value, key) => {
+    this.issuerSigned.nameSpaces.forEach((value, key) => {
       keys[key] = value.map((item) => item.rawData.elementIdentifier);
     });
     return keys;
@@ -148,7 +149,7 @@ export class IssuerSignedDocument {
 
   public getClaims() {
     const claims: Record<string, Record<string, unknown>> = {};
-    this.issuerSigned.namespaces.forEach((value, key) => {
+    this.issuerSigned.nameSpaces.forEach((value, key) => {
       claims[key] = {};
       value.forEach((item) => {
         claims[key][item.rawData.elementIdentifier] = item.rawData.elementValue;
@@ -160,7 +161,7 @@ export class IssuerSignedDocument {
   public select(keys: Record<string, Array<string>>) {
     const newNamespaces: Map<string, Array<IssuerSignedItem>> = new Map();
     for (const [name, selectedKeys] of Object.entries(keys)) {
-      const namespace = this.issuerSigned.namespaces.get(name);
+      const namespace = this.issuerSigned.nameSpaces.get(name);
       if (!namespace) {
         continue;
       }
@@ -173,7 +174,7 @@ export class IssuerSignedDocument {
     return new IssuerSignedDocument({
       docType: this.docType,
       issuerSigned: {
-        namespaces: newNamespaces,
+        nameSpaces: newNamespaces,
       },
     });
   }
@@ -181,11 +182,11 @@ export class IssuerSignedDocument {
   public addDeviceNamespace(name: string, claims: Record<string, unknown>) {
     if (!this.deviceSigned) {
       this.deviceSigned = {
-        namespaces: new Map<string, Record<string, unknown>>(),
+        nameSpaces: new Map<string, Record<string, unknown>>(),
       };
     }
 
-    this.deviceSigned.namespaces.set(name, claims);
+    this.deviceSigned.nameSpaces.set(name, claims);
   }
 
   public async addDeviceSignature(
@@ -200,7 +201,7 @@ export class IssuerSignedDocument {
       alg: signData.alg,
       sessionTranscript,
       docType: this.docType,
-      namespaces: this.deviceSigned.namespaces,
+      namespaces: this.deviceSigned.nameSpaces,
     });
     await deviceAuth.sign(signData.alg, signData.signer);
     this.deviceSigned.deviceAuth = { deviceSignature: deviceAuth };
@@ -228,7 +229,7 @@ export class IssuerSignedDocument {
       alg: mac.alg,
       sessionTranscript,
       docType: this.docType,
-      namespaces: this.deviceSigned.namespaces,
+      namespaces: this.deviceSigned.nameSpaces,
     });
     await deviceAuth.mac(mac.pubKey, mac.alg, mac.macFunction);
     this.deviceSigned.deviceAuth = { deviceMac: deviceAuth };
@@ -245,13 +246,13 @@ export class IssuerSignedDocument {
   }
 
   serialize() {
-    const namespaces = this.serializeNamespace();
+    const nameSpaces = this.serializeNamespace();
     const issuerAuth = this.serializeIssuerAuth();
     if (!this.deviceSigned) {
       return {
         docType: this.docType,
         issuerSigned: {
-          namespaces,
+          nameSpaces,
           issuerAuth,
         },
       };
@@ -261,7 +262,7 @@ export class IssuerSignedDocument {
     return {
       docType: this.docType,
       issuerSigned: {
-        namespaces,
+        nameSpaces,
         issuerAuth,
       },
       deviceSigned,
@@ -270,7 +271,7 @@ export class IssuerSignedDocument {
 
   private serializeNamespace() {
     const map = new Map<string, Array<DataElement>>();
-    for (const [name, namespace] of this.issuerSigned.namespaces.entries()) {
+    for (const [name, namespace] of this.issuerSigned.nameSpaces.entries()) {
       const serializedNamespace = namespace.map((item) => item.serialize());
       map.set(name, serializedNamespace);
     }
@@ -286,7 +287,7 @@ export class IssuerSignedDocument {
 
   private serializeDeviceSigned() {
     return {
-      namespaces: this.serializeDeviceNamespace(),
+      nameSpaces: this.serializeDeviceNamespace(),
       deviceAuth: this.serializeDeviceAuth(),
     };
   }
@@ -312,7 +313,7 @@ export class IssuerSignedDocument {
     if (!this.deviceSigned) {
       throw new Error('DeviceSigned is not set');
     }
-    const encoded = DataElement.fromData(this.deviceSigned.namespaces);
+    const encoded = DataElement.fromData(this.deviceSigned.nameSpaces);
     return encoded;
   }
 }

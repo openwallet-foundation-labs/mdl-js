@@ -97,6 +97,7 @@ export class Mac0 {
     const macData = this.createMacStructure();
     const kid = this.unprotectedHeader['4'] as Uint8Array | undefined;
     const tag = await macFunction(macData, key, { alg, kid });
+    this.tag = tag;
 
     const message: CoseMac0 = [
       this.protectedHeader,

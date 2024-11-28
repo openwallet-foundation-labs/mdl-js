@@ -1,0 +1,23 @@
+{
+  "name": "@m-doc/mdl-example",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "mdl": "tsx mdl.ts",
+    "de": "tsx debug.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@auth0/mdl": "^1.6.0",
+    "@m-doc/cose": "workspace:*",
+    "@m-doc/mdl": "workspace:*",
+    "@m-doc/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}

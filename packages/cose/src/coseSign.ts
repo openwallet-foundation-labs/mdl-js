@@ -94,6 +94,7 @@ export class Sign1 {
     const sig = this.createSigStructure();
     const kid = this.unprotectedHeader['4'] as Uint8Array | undefined;
     const signature = await signer(sig, { alg, kid });
+    this.signature = signature;
     // CBOR array structure: [protected, unprotected, payload, signature]
     const message: CoseSign1 = [
       this.protectedHeader,

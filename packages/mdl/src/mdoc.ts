@@ -20,7 +20,7 @@ export class MDoc {
   }
 
   encode() {
-    CBOR.encode({
+    return CBOR.encode({
       version: this.version,
       documents: this.documents.map((doc) => doc.serialize()),
       status: this.status,

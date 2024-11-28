@@ -6,7 +6,7 @@ export type Hasher = (
   data: ArrayBuffer,
   alg: DigestAlgorithm,
 ) => OrPromise<ArrayBuffer>;
-export type RandomGenerator = () => OrPromise<Uint8Array>;
+export type RandomGenerator = (length: number) => OrPromise<Uint8Array>;
 
 export enum MDocStatus {
   OK = 0,

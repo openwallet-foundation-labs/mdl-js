@@ -67,6 +67,9 @@ async function test() {
     },
   );
 
+  const ret = await isDoc.validateIssuerAuth(verifier);
+  console.log(ret);
+
   await isDoc.addDeviceSignature(
     {
       deviceEngagementBytes: new ArrayBuffer(3),
@@ -75,6 +78,9 @@ async function test() {
     },
     { alg: 'ES256', signer },
   );
+
+  const devRet = await isDoc.verifyDeviceSignature(verifier);
+  console.log(devRet);
 
   const a = new mdl.MDoc({
     documents: [isDoc],

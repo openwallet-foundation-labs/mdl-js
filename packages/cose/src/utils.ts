@@ -9,10 +9,7 @@ export function concat(...buffers: Uint8Array[]): Uint8Array {
   return buf;
 }
 
-export function constantTimeArrayBufferCompare(
-  a: ArrayBuffer,
-  b: ArrayBuffer,
-): boolean {
+export function compareArrayBuffer(a: ArrayBuffer, b: ArrayBuffer): boolean {
   if (a.byteLength !== b.byteLength) {
     return false;
   }

@@ -5,7 +5,7 @@ import {
   MacFunction,
   ProtectedHeader,
 } from './types';
-import { constantTimeArrayBufferCompare } from './utils';
+import { compareArrayBuffer } from './utils';
 
 export type Mac0Data = {
   protectedHeader: ArrayBuffer;
@@ -140,7 +140,7 @@ export class Mac0 {
       kid,
     });
 
-    const verified = constantTimeArrayBufferCompare(computedTag, this.tag);
+    const verified = compareArrayBuffer(computedTag, this.tag);
     const decodedPayload = CBOR.decode(this.payload);
 
     return { verified, payload: decodedPayload as T };

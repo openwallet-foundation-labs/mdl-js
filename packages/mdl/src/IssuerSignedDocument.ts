@@ -194,7 +194,9 @@ export class IssuerSignedDocument {
     signData: { alg: string; signer: Signer },
   ) {
     if (this.deviceSigned === undefined) {
-      throw new Error('DeviceSigned is not set');
+      this.deviceSigned = {
+        nameSpaces: new Map<string, Record<string, unknown>>(),
+      };
     }
 
     const deviceAuth = new DeviceAuthSign1({
@@ -222,7 +224,9 @@ export class IssuerSignedDocument {
     mac: { alg: string; pubKey: ArrayBuffer; macFunction: MacFunction },
   ) {
     if (this.deviceSigned === undefined) {
-      throw new Error('DeviceSigned is not set');
+      this.deviceSigned = {
+        nameSpaces: new Map<string, Record<string, unknown>>(),
+      };
     }
 
     const deviceAuth = new DeviceAuthMac0({

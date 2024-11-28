@@ -67,6 +67,15 @@ async function test() {
     },
   );
 
+  await isDoc.addDeviceSignature(
+    {
+      deviceEngagementBytes: new ArrayBuffer(3),
+      eReaderKeyBytes: new ArrayBuffer(5),
+      handover: ['handover'],
+    },
+    { alg: 'ES256', signer },
+  );
+
   const a = new mdl.MDoc({
     documents: [isDoc],
   });

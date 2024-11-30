@@ -1,5 +1,5 @@
 import { Mac0, MacFunction, Sign1, Sign1Verifier, Signer } from '@m-doc/cose';
-import { SessionTranscript } from './types';
+import { SessionTranscript } from '@m-doc/types';
 import { CBOR, DataElement } from '@m-doc/cbor';
 
 export interface DeviceAuthParams {

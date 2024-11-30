@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@m-doc/cbor": "workspace:*",
+    "@m-doc/types": "workspace:*",
     "@panva/hkdf": "^1.2.1",
     "js-base64": "^3.7.7"
   },

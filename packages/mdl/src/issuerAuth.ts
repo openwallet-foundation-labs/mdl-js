@@ -1,5 +1,5 @@
 import { Sign1, Sign1Verifier, Signer } from '@m-doc/cose';
-import { MSO } from './types';
+import { MSO } from '@m-doc/types';
 import { CBOR, DataElement } from '@m-doc/cbor';
 
 export type IssuerAuthData = {

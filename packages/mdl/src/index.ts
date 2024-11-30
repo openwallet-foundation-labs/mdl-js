@@ -1,4 +1,3 @@
-export * from './types';
 export * from './mdoc';
 export * from './IssuerSignedDocument';
 export * from './DeviceAuth';

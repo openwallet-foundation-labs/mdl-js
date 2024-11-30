@@ -1,5 +1,5 @@
 import { DataElement } from '@m-doc/cbor';
-import { IssuerSignedItem, IssuerSignedItemParams } from './IssuerSignedItem';
+import { IssuerSignedItem } from './IssuerSignedItem';
 import {
   DeviceKeyInfo,
   DigestAlgorithm,
@@ -8,7 +8,9 @@ import {
   RandomGenerator,
   SessionTranscript,
   ValidityInfo,
-} from './types';
+  DOC_TYPE,
+  IssuerSignedItemParams,
+} from '@m-doc/types';
 import { IssuerAuth } from './issuerAuth';
 import { MacFunction, Sign1Verifier, Signer } from '@m-doc/cose';
 import { DeviceAuthSign1, DeviceAuthMac0 } from './DeviceAuth';
@@ -43,7 +45,7 @@ export class IssuerSignedDocument {
   private deviceSigned?: DeviceSigned;
 
   constructor(params: IssuerSignedDocumentParams) {
-    this.docType = params.docType || 'org.iso.18013.5.1.mDL';
+    this.docType = params.docType || DOC_TYPE;
     this.issuerSigned = params.issuerSigned ?? {
       nameSpaces: new Map<string, Array<IssuerSignedItem>>(),
     };

@@ -44,7 +44,8 @@
       "esm"
     ]
   },
-  "devDependencies": {
-    "@m-doc/cbor": "workspace:*"
+  "dependencies": {
+    "@m-doc/cbor": "workspace:*",
+    "@m-doc/types": "workspace:*"
   }
 }

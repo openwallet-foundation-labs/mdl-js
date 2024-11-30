@@ -1,12 +1,5 @@
 import { DataElement } from '@m-doc/cbor';
-import { DigestAlgorithm, Hasher } from './types';
-
-export type IssuerSignedItemParams<T extends unknown = unknown> = {
-  digestID: number;
-  random: ArrayBuffer;
-  elementIdentifier: string;
-  elementValue: T;
-};
+import { DigestAlgorithm, Hasher, IssuerSignedItemParams } from '@m-doc/types';
 
 export class IssuerSignedItem<T extends unknown = unknown> {
   private dataItem: DataElement<IssuerSignedItemParams<T>>;

@@ -1,21 +1,6 @@
 import { concat } from './utils';
 import { base64urlToUint8Array, uint8ArrayToBase64Url } from './base64url';
-
-export interface JsonWebKey {
-  crv?: string;
-  d?: string; // private key
-  kty?: string;
-  x: string; // public key
-  y: string; // public key
-}
-
-export interface CoseKey {
-  '1': number; // key type (EC2: 2)
-  '-1': number; // curve (1: P-256, 2: P-384, 3: P-521)
-  '-2': Uint8Array; // x
-  '-3': Uint8Array; // y
-  '-4'?: Uint8Array; // private key
-}
+import { CoseKey, JsonWebKey } from '@m-doc/types';
 
 export const coseToJwk = (coseKey: CoseKey): JsonWebKey => {
   const kty = coseKey['1'];

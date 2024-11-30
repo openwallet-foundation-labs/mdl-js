@@ -1,3 +1,4 @@
+import { DataElement } from '@m-doc/cbor';
 import { CoseKey } from '@m-doc/cose';
 
 export type DigestAlgorithm = 'SHA-256' | 'SHA-384' | 'SHA-512';
@@ -40,4 +41,33 @@ export type SessionTranscript = {
   deviceEngagementBytes: ArrayBuffer | null;
   eReaderKeyBytes: ArrayBuffer | null;
   handover: string[];
+};
+
+// This types for the decoding
+export type RawMdocData = {
+  version: string;
+  status: number;
+  documents: Array<RawDoc>;
+};
+
+export type RawDoc = {
+  docType: string;
+  issuerSigned: {
+    nameSpaces: {
+      [name: string]: Array<DataElement>;
+    };
+    issuerAuth: [Uint8Array, Record<string, unknown>, Uint8Array, Uint8Array];
+  };
+  deviceSigned?: {
+    nameSpaces: DataElement;
+    deviceAuth: {
+      deviceSignature?: [
+        Uint8Array,
+        Record<string, unknown>,
+        Uint8Array,
+        Uint8Array,
+      ];
+      deviceMac?: [Uint8Array, Record<string, unknown>, Uint8Array, Uint8Array];
+    };
+  };
 };

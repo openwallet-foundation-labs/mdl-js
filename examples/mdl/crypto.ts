@@ -1,4 +1,33 @@
 import { subtle } from 'node:crypto';
+import crypto from 'crypto';
+
+export function arrayBufferToHexString(buffer: ArrayBuffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+export const jwkSample = {
+  kty: 'EC',
+  d: 'KLW1HN6uABbNBqkbAdQwySKMsKjU7MbOzyX4fjggWgY',
+  use: 'sig',
+  crv: 'P-256',
+  x: 'TKb0u9N7eZNIEXQ04Z2O_2yB9-Uw1OonSerLqxNMmfA',
+  y: 'GFdvH4e2NHQz40Bgs1jyXZkSbTSj-3SHo-NEVubSwGA',
+  alg: 'ES256',
+};
+
+export function generateRandomBytesSync(length: number) {
+  const buffer = crypto.randomBytes(length);
+  return new Uint8Array(buffer);
+}
+
+export function hash(data: ArrayBuffer, alg: string) {
+  const hashInstance = crypto.createHash(alg.toLowerCase());
+  const buffer = Buffer.from(data);
+  hashInstance.update(buffer);
+  return hashInstance.digest().buffer;
+}
 
 export const ES256 = {
   alg: 'ES256',

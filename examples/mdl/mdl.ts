@@ -1,36 +1,13 @@
 import * as mdl from '@m-doc/mdl';
 import { DOC_TYPE, DEFAULT_NAMESPACE } from '@m-doc/types';
-import crypto from 'crypto';
-import { ES256 } from './crypto';
+import {
+  arrayBufferToHexString,
+  ES256,
+  generateRandomBytesSync,
+  hash,
+  jwkSample,
+} from './crypto';
 import { coseFromJwk } from '@m-doc/cose';
-
-function arrayBufferToHexString(buffer) {
-  return Array.from(new Uint8Array(buffer))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-const jwkSample = {
-  kty: 'EC',
-  d: 'KLW1HN6uABbNBqkbAdQwySKMsKjU7MbOzyX4fjggWgY',
-  use: 'sig',
-  crv: 'P-256',
-  x: 'TKb0u9N7eZNIEXQ04Z2O_2yB9-Uw1OonSerLqxNMmfA',
-  y: 'GFdvH4e2NHQz40Bgs1jyXZkSbTSj-3SHo-NEVubSwGA',
-  alg: 'ES256',
-};
-
-function generateRandomBytesSync(length: number) {
-  const buffer = crypto.randomBytes(length);
-  return new Uint8Array(buffer);
-}
-
-function hash(data: ArrayBuffer, alg: string) {
-  const hashInstance = crypto.createHash(alg.toLowerCase());
-  const buffer = Buffer.from(data);
-  hashInstance.update(buffer);
-  return hashInstance.digest().buffer;
-}
 
 async function test() {
   const { publicKey, privateKey } = await ES256.generateKeyPair();
@@ -89,6 +66,9 @@ async function test() {
 
   const result = arrayBufferToHexString(encodedMdl);
   console.log(result);
+
+  const decodedMdl = mdl.MDoc.fromBuffer(encodedMdl);
+  console.log(decodedMdl);
 }
 
 test();

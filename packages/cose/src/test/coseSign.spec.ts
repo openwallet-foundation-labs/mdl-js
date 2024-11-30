@@ -97,8 +97,29 @@ describe('COSE', () => {
     expect(unprotectedHeader).toBeDefined();
     expect(payload).toBeDefined();
     expect(signature).toBeDefined();
+  });
 
-    const verify = await sign1.verify(verifier);
+  test('sign1', async () => {
+    const { publicKey, privateKey } = await ES256.generateKeyPair();
+    const signer = await ES256.getSigner(privateKey);
+    const verifier = await ES256.getVerifier(publicKey);
+    const sign1 = new Sign1({
+      protectedHeader: CBOR.encode(Sign1.convertHeader({ alg: 'ES256' })),
+      unprotectedHeader: { kid: 'key1' },
+      payload: CBOR.encode({ foo: 'bar' }),
+    });
+    const msg = await sign1.sign('ES256', signer);
+    expect(msg).toBeDefined();
+
+    const newSign1 = Sign1.fromBuffer(msg);
+    const [protectedHeader, unprotectedHeader, payload, signature] =
+      newSign1.data;
+    expect(protectedHeader).toBeDefined();
+    expect(unprotectedHeader).toBeDefined();
+    expect(payload).toBeDefined();
+    expect(signature).toBeDefined();
+
+    const verify = await newSign1.verify(verifier);
     expect(verify.verified).toBe(true);
     expect(verify.payload).toEqual({ foo: 'bar' });
   });

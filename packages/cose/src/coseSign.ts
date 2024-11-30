@@ -1,4 +1,4 @@
-import { CBOR } from '@m-doc/cbor';
+import { CBOR, copyUint8Array } from '@m-doc/cbor';
 import {
   COSE_ALGORITHMS,
   CoseSign1,
@@ -29,12 +29,12 @@ export class Sign1 {
 
   static fromBuffer(buffer: ArrayBuffer) {
     const [protectedHeader, unprotectedHeader, payload, signature] =
-      CBOR.decode<CoseSign1>(buffer);
+      CBOR.decode(buffer);
     return new Sign1({
-      protectedHeader,
+      protectedHeader: copyUint8Array(protectedHeader),
       unprotectedHeader,
-      payload,
-      signature,
+      payload: copyUint8Array(payload),
+      signature: copyUint8Array(signature),
     });
   }
 

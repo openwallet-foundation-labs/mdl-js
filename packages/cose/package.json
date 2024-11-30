@@ -49,5 +49,9 @@
     "@m-doc/cbor": "workspace:*",
     "@panva/hkdf": "^1.2.1",
     "js-base64": "^3.7.7"
+  },
+  "devDependencies": {
+    "cose-kit": "^1.7.1",
+    "jose": "^5.2.2"
   }
 }

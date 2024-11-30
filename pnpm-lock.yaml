@@ -120,7 +120,11 @@ importers:
         specifier: workspace:*
         version: link:../types
 
+  packages/nodejs-crypto: {}
+
   packages/types: {}
+
+  packages/utils: {}
 
   packages/x509:
     dependencies:

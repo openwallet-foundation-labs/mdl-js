@@ -1,6 +1,6 @@
 {
   "name": "@m-doc/nodejs-crypto",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "mdl implementation in typescript",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

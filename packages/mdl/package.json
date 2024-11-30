@@ -1,6 +1,6 @@
 {
   "name": "@m-doc/mdl",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "mdl implementation in typescript",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -46,9 +46,9 @@
     ]
   },
   "dependencies": {
-    "@m-doc/cose": "workspace:*",
     "@m-doc/cbor": "workspace:*",
-    "@m-doc/types": "workspace:*",
-    "@m-doc/decode": "workspace:*"
+    "@m-doc/cose": "workspace:*",
+    "@m-doc/decode": "workspace:*",
+    "@m-doc/types": "workspace:*"
   }
 }

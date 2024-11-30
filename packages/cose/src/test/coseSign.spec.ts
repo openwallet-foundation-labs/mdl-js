@@ -97,5 +97,9 @@ describe('COSE', () => {
     expect(unprotectedHeader).toBeDefined();
     expect(payload).toBeDefined();
     expect(signature).toBeDefined();
+
+    const verify = await sign1.verify(verifier);
+    expect(verify.verified).toBe(true);
+    expect(verify.payload).toEqual({ foo: 'bar' });
   });
 });

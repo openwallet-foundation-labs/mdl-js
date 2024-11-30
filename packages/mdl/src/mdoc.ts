@@ -5,6 +5,7 @@ import { IssuerSignedItem, IssuerSignedItemParams } from './IssuerSignedItem';
 import { Mac0, Sign1 } from '@m-doc/cose';
 import { IssuerAuth } from './issuerAuth';
 import { DeviceAuthMac0, DeviceAuthSign1 } from './DeviceAuth';
+import { decodeMdl } from '@m-doc/decode';
 
 export type MDocData = {
   version?: string;
@@ -32,7 +33,7 @@ export class MDoc {
   }
 
   static fromBuffer(buffer: ArrayBuffer) {
-    const data = CBOR.decode<RawMdocData>(buffer);
+    const data = decodeMdl(buffer);
     const { documents, status, version } = data;
     const issuerDocs = documents.map((doc) => {
       const { docType, issuerSigned, deviceSigned } = doc;

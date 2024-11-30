@@ -1,5 +1,5 @@
 {
-  "name": "@m-doc/mdl",
+  "name": "@m-doc/decode",
   "version": "0.0.1",
   "description": "mdl implementation in typescript",
   "main": "dist/index.js",
@@ -21,8 +21,7 @@
   },
   "keywords": [
     "mdl",
-    "mdoc",
-    "cbor"
+    "mdoc"
   ],
   "engines": {
     "node": ">=16"
@@ -45,10 +44,7 @@
       "esm"
     ]
   },
-  "dependencies": {
-    "@m-doc/cose": "workspace:*",
-    "@m-doc/cbor": "workspace:*",
-    "@m-doc/types": "workspace:*",
-    "@m-doc/decode": "workspace:*"
+  "devDependencies": {
+    "@m-doc/cbor": "workspace:*"
   }
 }

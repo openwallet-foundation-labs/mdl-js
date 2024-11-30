@@ -90,6 +90,12 @@ importers:
         specifier: ^5.2.2
         version: 5.3.0
 
+  packages/decode:
+    devDependencies:
+      '@m-doc/cbor':
+        specifier: workspace:*
+        version: link:../cbor
+
   packages/mdl:
     dependencies:
       '@m-doc/cbor':
@@ -98,6 +104,9 @@ importers:
       '@m-doc/cose':
         specifier: workspace:*
         version: link:../cose
+      '@m-doc/decode':
+        specifier: workspace:*
+        version: link:../decode
       '@m-doc/types':
         specifier: workspace:*
         version: link:../types

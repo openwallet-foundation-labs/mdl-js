@@ -43,7 +43,6 @@ export type SessionTranscript = {
   handover: string[];
 };
 
-// This types for the decoding
 export type RawMdocData = {
   version: string;
   status: number;

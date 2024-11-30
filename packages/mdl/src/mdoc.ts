@@ -1,11 +1,11 @@
 import { CBOR, DataElement } from '@m-doc/cbor';
 import { DeviceSigned, IssuerSignedDocument } from './IssuerSignedDocument';
-import { MDocStatus, RawDoc, RawMdocData } from './types';
+import { MDocStatus } from './types';
 import { IssuerSignedItem, IssuerSignedItemParams } from './IssuerSignedItem';
 import { Mac0, Sign1 } from '@m-doc/cose';
 import { IssuerAuth } from './issuerAuth';
 import { DeviceAuthMac0, DeviceAuthSign1 } from './DeviceAuth';
-import { decodeMdl } from '@m-doc/decode';
+import { decodeMdl, RawDoc } from '@m-doc/decode';
 
 export type MDocData = {
   version?: string;

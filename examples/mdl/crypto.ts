@@ -7,6 +7,13 @@ export function arrayBufferToHexString(buffer: ArrayBuffer) {
     .join('');
 }
 
+export function hexStringToArrayBuffer(hex: string) {
+  const bytes = new Uint8Array(
+    hex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)),
+  );
+  return bytes.buffer;
+}
+
 export const jwkSample = {
   kty: 'EC',
   d: 'KLW1HN6uABbNBqkbAdQwySKMsKjU7MbOzyX4fjggWgY',

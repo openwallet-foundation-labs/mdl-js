@@ -50,6 +50,9 @@ importers:
       '@m-doc/cose':
         specifier: workspace:*
         version: link:../../packages/cose
+      '@m-doc/decode':
+        specifier: workspace:*
+        version: link:../../packages/decode
       '@m-doc/mdl':
         specifier: workspace:*
         version: link:../../packages/mdl

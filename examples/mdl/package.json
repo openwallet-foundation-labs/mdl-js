@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "mdl": "tsx mdl.ts",
-    "de": "tsx debug.ts"
+    "decode": "tsx decode.ts"
   },
   "keywords": [],
   "author": "",
@@ -15,7 +15,8 @@
     "@auth0/mdl": "^1.6.0",
     "@m-doc/cose": "workspace:*",
     "@m-doc/mdl": "workspace:*",
-    "@m-doc/types": "workspace:*"
+    "@m-doc/types": "workspace:*",
+    "@m-doc/decode": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.19.2"

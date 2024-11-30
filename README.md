@@ -10,6 +10,14 @@ This is the reference implmentation of [ISO 18013-5](https://www.iso.org/standar
 - TypeScript: Our library is written in TypeScript and provides type definitions for the API.
 - Easy to use: Our library is easy to use and provides a simple API for handling mDL data.
 
+## Features
+
+- [x] Issue mDL Document
+- [x] Present mDL Document
+- [x] Verify mDL Document
+- [x] Decode mDL Document
+- [x] Decode X509 Certificate
+
 ## Installation
 
 ```bash
@@ -27,3 +35,15 @@ pnpm install @m-doc/mdl
 ## Version
 
 We keep all the versions of our packages in sync.
+
+## Usage
+
+TBD
+
+## License
+
+Apache-2.0
+
+## Contributing
+
+New features and bug fixes are welcome! Please open an issue or pull request if you find any bugs or have any suggestions.

@@ -1,9 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { Sign1 } from '../index';
-import { Sign1 as CoseKitSign1 } from 'cose-kit';
 import { subtle } from 'node:crypto';
 import { CBOR } from '@m-doc/cbor';
-import { importJWK, JWK } from 'jose';
 
 export const ES256 = {
   alg: 'ES256',

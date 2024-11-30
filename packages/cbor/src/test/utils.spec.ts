@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { CBOR } from '../utils';
+import { CBOR } from '..';
 import { DataElement } from '../DataElement';
 
 function hexToArrayBuffer(hexString: string): ArrayBuffer {

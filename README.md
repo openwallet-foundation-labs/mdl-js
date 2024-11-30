@@ -2,6 +2,12 @@
 
 This is the reference implmentation of [ISO 18013-5](https://www.iso.org/standard/69084.html) defines mDL (mobile Driver Licenses) specification written in TypeScript. It aims to provide a production-ready, robust and secure way to handle.
 
+## Supported Platforms
+
+- Node.js
+- Browser
+- React Native
+
 ## Concepts
 
 - Platfrom agnostic: Our library is platform agnostic and does not depend on any specific platform.
